@@ -69,10 +69,19 @@ class FasdData (object):
 			os.remove(tmpname)
 		return retval
 
-	def filter_exists (self, data):
+	def filter_out (self, data, what):
 		new_data = []
-		for path, rank, date in data:
-			pass
+		for item in data:
+			if what == 'a':
+				if os.path.exists(item[0]):
+					new_data.append(item)
+			elif what == 'f':
+				if os.path.isfile(item[0]):
+					new_data.append(item)
+			else:
+				if os.path.isdir(item[0]):
+					new_data.append(item)
+		return new_data
 			
 	def _random (self):
 		if sys.platform[:3] == 'win':
@@ -102,7 +111,6 @@ if __name__ == '__main__':
 		print(len(data))
 		fd.print(data)
 		print(fd.save(data))
-
 		return 0
 
 	test1()
