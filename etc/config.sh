@@ -104,6 +104,10 @@ export VIM_CONFIG
 
 export CHEATCOLORS=true
 
+if [ -f "$HOME/.local/lib/python/compinit.py" ]; then
+	export PYTHONSTARTUP="$HOME/.local/lib/python/compinit.py"
+fi
+
 
 #----------------------------------------------------------------------
 # quick functions
