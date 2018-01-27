@@ -15,6 +15,7 @@ import os
 import shutil
 import codecs
 import random
+import re
 
 
 #----------------------------------------------------------------------
@@ -99,6 +100,29 @@ class FasdData (object):
 			print('%s|%d|%d'%(path, rank, atime))
 		return 0
 
+	def pretty (self, data):
+		output = [ (n[1], n[0]) for n in data ]
+		output.sort()
+		output = [ (str(n[0]), n[1]) for n in output ]
+		maxlen = max([14] + [ len(n[0]) for n in output ])
+		strfmt = '%%-%ds %%s'%maxlen
+		for m, n in output:
+			print(strfmt%(m, n))
+		return 0
+
+	def match (self, data, args, incase = False):
+		def compare_string (string, patterns):
+			for pat in patterns:
+				m = pat.search(string)
+				if not m:
+					return False
+				string = string[m.end():]
+			return True
+		flags = incase and re.I or 0
+		patterns = [ re.compile(n, flags) for n in args ]
+		m = filter(lambda n: compare_string(n[0], patterns), data)
+		return m
+
 
 
 #----------------------------------------------------------------------
@@ -110,11 +134,16 @@ if __name__ == '__main__':
 		fd = FasdData('d:/navdb.txt')
 		data = fd.load()
 		# data.append(['fuck', 0, 0])
-		print(len(data))
-		fd.print(data)
+		# print(len(data))
+		fd.pretty(data)
+		print()
 		data = fd.filter_out(data)
 		print(len(data))
+		print()
 		# fd.save(data)
+		m = fd.match(data, ['vim'])
+		# m = fd.match(data, ['vim$'])
+		fd.pretty(m)
 		return 0
 
 	test1()
