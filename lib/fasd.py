@@ -30,6 +30,8 @@ class FasdData (object):
 		self.user = owner
 		self.mode = mode
 		self.unix = (sys.platform[:3] != 'win')
+		self.nocase = False
+		self.maxage = 2000
 
 	# load z/fasd compatible file to a list of [path, rank, atime, 0]
 	def load (self):
@@ -117,7 +119,7 @@ class FasdData (object):
 			print(strfmt%(m, n))
 		return 0
 
-	def match (self, data, args, incase = False):
+	def match (self, data, args, nocase = False):
 		def compare_string (string, patterns):
 			for pat in patterns:
 				m = pat.search(string)
@@ -125,9 +127,17 @@ class FasdData (object):
 					return False
 				string = string[m.end():]
 			return True
-		flags = incase and re.I or 0
+		flags = nocase and re.I or 0
 		patterns = [ re.compile(n, flags) for n in args ]
 		m = filter(lambda n: compare_string(n[0], patterns), data)
+		return m
+
+	def search (self, data, args):
+		if self.nocase:
+			return self.match(data, args, True)
+		m = self.match(data, args, False)
+		if not m:
+			m = self.match(data, args, True)
 		return m
 
 	def score (self, data, mode):
@@ -154,6 +164,31 @@ class FasdData (object):
 				item[3] = atime - current
 		return 0
 
+	def add (self, data, path):
+		current = int(time.time())
+		count = sum([ n[1] for n in data ])
+		if count >= self.maxage:
+			newdata = []
+			for item in data:
+				key = int(item[1] * 0.9)
+				if key > 0:
+					newdata.append(item)
+			data = newdata
+		find = False
+		key = self.nocase and path.lower() or path
+		for item in data:
+			name = item[0]
+			if self.nocase:
+				name = name.lower()
+			if name == key:
+				item[1] += 1
+				item[2] = current
+				find = True
+		if not find:
+			item = [path, 1, current, 0]
+			data.append(item)
+		return data
+
 
 #----------------------------------------------------------------------
 # 
@@ -168,11 +203,11 @@ if __name__ == '__main__':
 		fd.print(data)
 		# fd.pretty(data)
 		print()
-		data = fd.filter_out(data)
+		data = fd.filter(data)
 		print(len(data))
 		print()
 		# fd.save(data)
-		m = fd.match(data, ['vim'])
+		m = fd.search(data, ['Vim'])
 		fd.score(m, 'f')
 		# m = fd.match(data, ['vim$'])
 		fd.pretty(m)
