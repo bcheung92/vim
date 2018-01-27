@@ -166,7 +166,7 @@ class FasdData (object):
 				item[3] = atime - current
 		return 0
 
-	def insert_path (self, data, path):
+	def insert (self, data, path):
 		key = self.nocase and path.lower() or path
 		current = int(time.time())
 		count = sum([ n[1] for n in data ])
@@ -194,13 +194,9 @@ class FasdData (object):
 
 	def normalize (self, path):
 		path = path.strip('\r\n\t ')
-		if path[-1:] in ('/', '\\'):
-			if self.unix:
-				if len(path) > 1:
-					path = path[:-1]
-			else:
-				if len(path) > 3:
-					path = path[:-1]
+		if not path:
+			return None
+		path = os.path.normpath(path)
 		key = self.nocase and path.lower() or path
 		if (not path) or (not os.path.exists(path)):
 			return None
@@ -219,7 +215,7 @@ class FasdData (object):
 		path = self.normalize(path)
 		if not path:
 			return data
-		return self.insert_path(data, path)
+		return self.insert(data, path)
 
 	def converge (self, data_list):
 		path_dict = {}
@@ -240,6 +236,15 @@ class FasdData (object):
 		for key in path_dict:
 			data.append(path_dict[key])
 		return data
+
+
+#----------------------------------------------------------------------
+# FasdNg
+#----------------------------------------------------------------------
+class FasdNg (object):
+
+	def __init__ (self):
+		self.fd = FasdData()
 
 
 #----------------------------------------------------------------------
