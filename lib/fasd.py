@@ -31,6 +31,7 @@ class FasdData (object):
 		self.mode = mode
 		self.unix = (sys.platform[:3] != 'win')
 
+	# load z/fasd compatible file to a list of [path, rank, atime, 0]
 	def load (self):
 		data = []
 		try:
@@ -43,11 +44,13 @@ class FasdData (object):
 					rank = part[1].isdigit() and int(part[1]) or 0
 					atime = part[2].rstrip('\n')
 					atime = atime.isdigit() and int(atime) or 0
-					data.append([path, rank, atime, 0])
+					score = 0
+					data.append([path, rank, atime, score])
 		except IOError:
 			return []
 		return data
 
+	# save data into text file in the line format of "path|rank|atime" 
 	def save (self, data):
 		tmpname = self.name + '.' + self._random()
 		retval = 0
@@ -68,10 +71,14 @@ class FasdData (object):
 		except IOError:
 			retval = -1
 		if os.path.exists(tmpname):
-			os.remove(tmpname)
+			try:
+				os.remove(tmpname)
+			except:
+				pass
 		return retval
 
-	def filter_out (self, data, what = 'a'):
+	# check existence and filter
+	def filter (self, data, what = 'a'):
 		new_data = []
 		for item in data:
 			if what == 'a':
