@@ -43,7 +43,7 @@ class FasdData (object):
 					rank = part[1].isdigit() and int(part[1]) or 0
 					atime = part[2].rstrip('\n')
 					atime = atime.isdigit() and int(atime) or 0
-					data.append([path, rank, atime])
+					data.append([path, rank, atime, 0])
 		except IOError:
 			return []
 		return data
@@ -53,7 +53,7 @@ class FasdData (object):
 		retval = 0
 		try:
 			with codecs.open(tmpname, 'w', encoding = 'utf-8') as fp:
-				for path, rank, atime in data:
+				for path, rank, atime, _ in data:
 					fp.write('%s|%d|%d\n'%(path, rank, atime))
 			if self.unix:
 				if self.user:
@@ -96,15 +96,15 @@ class FasdData (object):
 		return ts.lower()
 	
 	def print (self, data):
-		for path, rank, atime in data:
-			print('%s|%d|%d'%(path, rank, atime))
+		for path, rank, atime, score in data:
+			print('%s|%d|%d -> %s'%(path, rank, atime, score))
 		return 0
 
 	def pretty (self, data):
-		output = [ (n[1], n[0]) for n in data ]
+		output = [ (n[3], n[0]) for n in data ]
 		output.sort()
 		output = [ (str(n[0]), n[1]) for n in output ]
-		maxlen = max([14] + [ len(n[0]) for n in output ])
+		maxlen = max([12] + [ len(n[0]) for n in output ]) + 2
 		strfmt = '%%-%ds %%s'%maxlen
 		for m, n in output:
 			print(strfmt%(m, n))
@@ -123,6 +123,29 @@ class FasdData (object):
 		m = filter(lambda n: compare_string(n[0], patterns), data)
 		return m
 
+	def score (self, data, mode):
+		current = int(time.time())
+		if mode in (0, 'frecent', 'f'):
+			for item in data:
+				atime = item[2]
+				delta = current - atime
+				if delta < 3600: 
+					score = item[1] * 4
+				elif delta < 86400: 
+					score = item[1] * 2
+				elif delta < 604800: 
+					score = item[1] / 2
+				else:
+					score = item[1] / 4
+				item[3] = score
+		elif mode in (1, 'rank', 'r'):
+			for item in data:
+				item[3] = item[1]
+		elif mode in (2, 'time', 't'):
+			for item in data:
+				atime = itime[2]
+				item[3] = atime - current
+		return 0
 
 
 #----------------------------------------------------------------------
@@ -135,13 +158,15 @@ if __name__ == '__main__':
 		data = fd.load()
 		# data.append(['fuck', 0, 0])
 		# print(len(data))
-		fd.pretty(data)
+		fd.print(data)
+		# fd.pretty(data)
 		print()
 		data = fd.filter_out(data)
 		print(len(data))
 		print()
 		# fd.save(data)
 		m = fd.match(data, ['vim'])
+		fd.score(m, 'f')
 		# m = fd.match(data, ['vim$'])
 		fd.pretty(m)
 		return 0
