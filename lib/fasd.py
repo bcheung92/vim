@@ -56,7 +56,16 @@ class FasdData (object):
 
 	# save data into text file in the line format of "path|rank|atime" 
 	def save (self, data):
-		tmpname = self.name + '.' + self._random()
+		def make_tempname(filename):
+			if sys.platform[:3] == 'win':
+				ts = int(time.time() * 1000)
+				ts = hex(ts)[2:]
+			else:
+				ts = int(time.time() * 1000000)
+				ts = hex(ts)[2:]
+			ts += hex(random.randrange(65536))[2:]
+			return filename + '.' + ts.lower()
+		tmpname = self.make_tempname()
 		retval = 0
 		try:
 			with codecs.open(tmpname, 'w', encoding = 'utf-8') as fp:
@@ -96,16 +105,6 @@ class FasdData (object):
 					new_data.append(item)
 		return new_data
 			
-	def _random (self):
-		if sys.platform[:3] == 'win':
-			ts = int(time.time() * 1000)
-			ts = hex(ts)[2:]
-		else:
-			ts = int(time.time() * 1000000)
-			ts = hex(ts)[2:]
-		ts += hex(random.randrange(65536))[2:]
-		return ts.lower()
-	
 	def print (self, data):
 		for path, rank, atime, score in data:
 			print('%s|%d|%d -> %s'%(path, rank, atime, score))
@@ -167,7 +166,7 @@ class FasdData (object):
 				item[3] = atime - current
 		return 0
 
-	def insert (self, data, path):
+	def insert_path (self, data, path):
 		key = self.nocase and path.lower() or path
 		current = int(time.time())
 		count = sum([ n[1] for n in data ])
@@ -220,7 +219,7 @@ class FasdData (object):
 		path = self.normalize(path)
 		if not path:
 			return data
-		return self.insert(data, path)
+		return self.insert_path(data, path)
 
 	def converge (self, data_list):
 		path_dict = {}
@@ -244,7 +243,7 @@ class FasdData (object):
 
 
 #----------------------------------------------------------------------
-# 
+# testing
 #----------------------------------------------------------------------
 if __name__ == '__main__':
 
