@@ -40,8 +40,9 @@ class FasdData (object):
 						continue
 					path = part[0]
 					rank = part[1].isdigit() and int(part[1]) or 0
-					date = part[2].isdigit() and int(part[2]) or 0
-					data.append([path, rank, date])
+					atime = part[2].rstrip('\n')
+					atime = atime.isdigit() and int(atime) or 0
+					data.append([path, rank, atime])
 		except IOError:
 			return []
 		return data
@@ -51,8 +52,8 @@ class FasdData (object):
 		retval = 0
 		try:
 			with codecs.open(tmpname, 'w', encoding = 'utf-8') as fp:
-				for path, rank, date in data:
-					fp.write('%s|%d|%d\n'%(path, rank, date))
+				for path, rank, atime in data:
+					fp.write('%s|%d|%d\n'%(path, rank, atime))
 			if self.unix:
 				if self.user:
 					import pwd
@@ -69,7 +70,7 @@ class FasdData (object):
 			os.remove(tmpname)
 		return retval
 
-	def filter_out (self, data, what):
+	def filter_out (self, data, what = 'a'):
 		new_data = []
 		for item in data:
 			if what == 'a':
@@ -94,8 +95,8 @@ class FasdData (object):
 		return ts.lower()
 	
 	def print (self, data):
-		for path, rank, date in data:
-			print('%s|%d|%d'%(path, rank, date))
+		for path, rank, atime in data:
+			print('%s|%d|%d'%(path, rank, atime))
 		return 0
 
 
@@ -108,9 +109,12 @@ if __name__ == '__main__':
 	def test1():
 		fd = FasdData('d:/navdb.txt')
 		data = fd.load()
+		# data.append(['fuck', 0, 0])
 		print(len(data))
 		fd.print(data)
-		print(fd.save(data))
+		data = fd.filter_out(data)
+		print(len(data))
+		# fd.save(data)
 		return 0
 
 	test1()
