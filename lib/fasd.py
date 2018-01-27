@@ -23,15 +23,17 @@ import re
 #----------------------------------------------------------------------
 class FasdData (object):
 
-	def __init__ (self, filename, owner = None, mode = -1):
+	def __init__ (self, filename, owner = None):
 		if '~' in filename:
 			filename = os.path.expanduser(filename)
 		self.name = filename
 		self.user = owner
-		self.mode = mode
+		self.mode = -1
+		self.home = os.path.expanduser('~')
 		self.unix = (sys.platform[:3] != 'win')
 		self.nocase = False
 		self.maxage = 2000
+		self.exclude = []
 
 	# load z/fasd compatible file to a list of [path, rank, atime, 0]
 	def load (self):
@@ -120,7 +122,7 @@ class FasdData (object):
 		return 0
 
 	def match (self, data, args, nocase = False):
-		def compare_string (string, patterns):
+		def match_string (string, patterns):
 			for pat in patterns:
 				m = pat.search(string)
 				if not m:
@@ -129,15 +131,16 @@ class FasdData (object):
 			return True
 		flags = nocase and re.I or 0
 		patterns = [ re.compile(n, flags) for n in args ]
-		m = filter(lambda n: compare_string(n[0], patterns), data)
+		m = filter(lambda n: match_string(n[0], patterns), data)
 		return m
 
 	def search (self, data, args):
 		if self.nocase:
-			return self.match(data, args, True)
-		m = self.match(data, args, False)
-		if not m:
 			m = self.match(data, args, True)
+		else:
+			m = self.match(data, args, False)
+			if not m:
+				m = self.match(data, args, True)
 		return m
 
 	def score (self, data, mode):
@@ -164,7 +167,8 @@ class FasdData (object):
 				item[3] = atime - current
 		return 0
 
-	def add (self, data, path):
+	def insert (self, data, path):
+		key = self.nocase and path.lower() or path
 		current = int(time.time())
 		count = sum([ n[1] for n in data ])
 		if count >= self.maxage:
@@ -175,7 +179,6 @@ class FasdData (object):
 					newdata.append(item)
 			data = newdata
 		find = False
-		key = self.nocase and path.lower() or path
 		for item in data:
 			name = item[0]
 			if self.nocase:
@@ -184,9 +187,59 @@ class FasdData (object):
 				item[1] += 1
 				item[2] = current
 				find = True
+				break
 		if not find:
 			item = [path, 1, current, 0]
 			data.append(item)
+		return data
+
+	def normalize (self, path):
+		path = path.strip('\r\n\t ')
+		if path[-1:] in ('/', '\\'):
+			if self.unix:
+				if len(path) > 1:
+					path = path[:-1]
+			else:
+				if len(path) > 3:
+					path = path[:-1]
+		key = self.nocase and path.lower() or path
+		if (not path) or (not os.path.exists(path)):
+			return None
+		if self.unix:
+			home = self.nocase and self.home.lower() or self.home
+			if key == home:
+				return None
+		for exclude in self.exclude:
+			if self.nocase:
+				exclude = exclude.lower()
+			if key.startswith(exclude):
+				return None
+		return path
+
+	def add (self, data, path):
+		path = self.normalize(path)
+		if not path:
+			return data
+		return self.insert(data, path)
+
+	def converge (self, data_list):
+		path_dict = {}
+		for data in data_list:
+			for item in data:
+				key = item[0]
+				if self.nocase:
+					key = key.lower()
+				if not key in path_dict:
+					path_dict[key] = item
+				else:
+					oi = path_dict[key]
+					rank = oi[1]
+					atime = oi[2]
+					oi[1] = rank + item[1]
+					oi[2] = max(atime, item[2])
+		data = []
+		for key in path_dict:
+			data.append(path_dict[key])
 		return data
 
 
