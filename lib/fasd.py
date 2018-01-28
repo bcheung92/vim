@@ -379,8 +379,10 @@ class FasdNg (object):
 		data = self.load()
 		for backend in self.backends:
 			source = []
-			if backend in ('vim', 'viminfo'):
+			if backend == 'viminfo':
 				source = self.backend_viminfo()
+			elif backend.startswith('+'):
+				source = self.backend_command(backend[1:])
 			# source = self.fd.filter(source)
 			data = self.fd.converge(data, source)
 		self.common = None
@@ -397,6 +399,32 @@ class FasdNg (object):
 		else:
 			m = self.fd.score(m, 't')
 		return m
+
+	def backend_command (self, command):
+		import subprocess
+		p = subprocess.Popen(command, shell = True,
+			stdin = None, stdout = subprocess.PIPE, stderr = None)
+		output = p.stdout.read()
+		p.wait()
+		if isinstance(output, bytes):
+			if sys.stdout and sys.stdout.encoding:
+				output = output.encode(sys.stdout.encoding, 'ignore')
+			elif sys.stdin and sys.stdin.encoding:
+				output = output.encode(sys.stdin.encoding, 'ignore')
+			else:
+				output = output.encode('utf-8', 'ignore')
+		data = []
+		for line in output.split('\n'):
+			part = line.rstrip('\r\n\t ').split('|')
+			if len(part) != 3:
+				continue
+			path = part[0]
+			rank = part[1].isdigit() and int(part[1]) or 0
+			atime = part[2].rstrip('\n')
+			atime = atime.isdigit() and int(atime) or 0
+			score = 0
+			data.append([path, rank, atime, score])
+		return data
 		
 	def backend_viminfo (self):
 		data = []
