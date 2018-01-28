@@ -126,7 +126,7 @@ class FasdData (object):
 			string = string.lower()
 		for arg in args:
 			if arg.endswith('$'):
-				args = args[:-1]
+				arg = arg[:-1]
 			pos = string.find(arg, pos)
 			if pos < 0:
 				return False
@@ -355,9 +355,9 @@ if __name__ == '__main__':
 		print(len(data))
 		print()
 		# fd.save(data)
-		args = ['github', 'vi']
-		args = ['D:\\']
-		print(fd.string_match_fasd('d:\\', args, 0))
+		args = ['github', 'im$']
+		# args = ['D:\\']
+		print(fd.string_match_fasd('d:\\acm\\github\\vim', args, 0))
 		m = []
 		# args = ['qemu']
 		m = fd.search(data, args, 0)
