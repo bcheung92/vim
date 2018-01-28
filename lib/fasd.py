@@ -184,7 +184,7 @@ class FasdData (object):
 			test = perf
 			if self.nocase:
 				path = path.lower()
-				test = lowerperf
+				test = lowperf
 			if test == path:
 				find = True
 				break
@@ -350,6 +350,7 @@ class FasdNg (object):
 		self._init_environ()
 		self.common = None
 		self.data = None
+		self.backend_map = {}
 		self.method = 'frecent'
 
 	def _init_environ (self):
@@ -429,10 +430,11 @@ class FasdNg (object):
 		for backend in self.backends:
 			source = []
 			try:
-				if backend == 'viminfo':
-					source = self.backend_viminfo()
-				elif backend.startswith('+'):
+				if backend.startswith('+'):
 					source = self.backend_command(backend[1:])
+				elif backend in self.backend_map:
+					b = self.backend_map[backend]
+					source = b()
 			except:
 				continue
 			source = self.fd.filter(source)
@@ -480,69 +482,78 @@ class FasdNg (object):
 			data.append([path, rank, atime, score])
 		return data
 		
-	def backend_viminfo (self):
-		data = []
-		viminfo = os.environ.get('_F_VIMINFO', '')
-		if not viminfo:
-			if self.unix:
-				viminfo = os.path.expanduser('~/.viminfo')
+	def register (self, name, backend_function):
+		self.backend_map[name] = backend_function
+		return True
+
+
+#----------------------------------------------------------------------
+# backend_viminfo 
+#----------------------------------------------------------------------
+def backend_viminfo():
+	data = []
+	viminfo = os.environ.get('_F_VIMINFO', '')
+	if not viminfo:
+		if sys.platform[:3] != 'win':
+			viminfo = os.path.expanduser('~/.viminfo')
+		else:
+			viminfo = os.path.expanduser('~/_viminfo')
+	if not os.path.exists(viminfo):
+		return data
+	current = int(time.time())
+	with open(viminfo, 'rb') as fp:
+		content = fp.read()
+		pos = 0
+		encoding = 'utf-8'
+		while True:
+			next_pos = content.find(b'\n', pos)
+			if next_pos < 0:
+				break
+			line = content[pos:next_pos]
+			pos = next_pos + 1
+			line = line.strip(b'\r\n\t ')
+			if line.startswith(b'*encoding='):
+				enc = line[len(b'*encoding='):].strip(b'\r\n\t ')
+				encoding = enc.decode('utf-8', 'ignore')
+		state = 0
+		filename = ''
+		text = content.decode(encoding, 'ignore')
+		for line in text.split('\n'):
+			line = line.rstrip('\r\n\t')
+			if state == 0:
+				if line.startswith('>'):
+					filename = line[1:].lstrip(' \t')
+					state = 1
 			else:
-				viminfo = os.path.expanduser('~/_viminfo')
-		if not os.path.exists(viminfo):
-			return data
-		current = int(time.time())
-		with open(viminfo, 'rb') as fp:
-			content = fp.read()
-			pos = 0
-			encoding = 'utf-8'
-			while True:
-				next_pos = content.find(b'\n', pos)
-				if next_pos < 0:
-					break
-				line = content[pos:next_pos]
-				pos = next_pos + 1
-				line = line.strip(b'\r\n\t ')
-				if line.startswith(b'*encoding='):
-					enc = line[len(b'*encoding='):].strip(b'\r\n\t ')
-					encoding = enc.decode('utf-8', 'ignore')
-			state = 0
-			filename = ''
-			text = content.decode(encoding, 'ignore')
-			for line in text.split('\n'):
-				line = line.rstrip('\r\n\t')
-				if state == 0:
-					if line.startswith('>'):
-						filename = line[1:].lstrip(' \t')
-						state = 1
-				else:
-					state = 0
-					if not line[:1].isspace():
-						data.append([filename, 2, current, 0])
-						continue
-					line = line.lstrip(' \t')
-					if line[:1] != '*':
-						data.append([filename, 2, current, 0])
-						continue
-					for part in line.split():
-						if part.isdigit():
-							ts = int(part)
-							data.append([filename, 2, ts, 0])
-							break
-		new_data = []
-		ignore_prefix = ['git:', 'ssh:', 'gista:']
-		for item in data:
-			name = item[0]
-			skip = False
-			for ignore in ignore_prefix:
-				if name.startswith(ignore):
-					skip = True
-					break
-			if not skip:
-				if '~' in name:
-					item[0] = os.path.expanduser(name)
-				new_data.append(item)
-		# return data
-		return self.fd.filter(new_data)
+				state = 0
+				if not line[:1].isspace():
+					data.append([filename, 2, current, 0])
+					continue
+				line = line.lstrip(' \t')
+				if line[:1] != '*':
+					data.append([filename, 2, current, 0])
+					continue
+				for part in line.split():
+					if part.isdigit():
+						ts = int(part)
+						data.append([filename, 2, ts, 0])
+						break
+	new_data = []
+	ignore_prefix = ['git:', 'ssh:', 'gista:']
+	for item in data:
+		name = item[0]
+		skip = False
+		for ignore in ignore_prefix:
+			if name.startswith(ignore):
+				skip = True
+				break
+		if not skip:
+			if '~' in name:
+				item[0] = os.path.expanduser(name)
+			new_data.append(item)
+	# return data
+	data = filter(lambda n: os.path.exists(n[0]), new_data)
+	return data
 
 
 #----------------------------------------------------------------------
@@ -590,8 +601,10 @@ if __name__ == '__main__':
 		fn = FasdNg()
 		fn.readonly = True
 		print(fn.fd.name)
+		# fn.data = []
 		# data = fn.backend_viminfo()
-		# fn.backends = ['+type d:\\navdb.txt', 'viminfo']
+		fn.backends = ['viminfo']
+		# fn.backend_map['viminfo'] = backend_viminfo
 		# fn.fd.score(data, 'f')
 		# fn.fd.pretty(fn.load())
 		fn.add(['d:/linwei', 'd:/music'])
