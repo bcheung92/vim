@@ -188,13 +188,10 @@ class FasdData (object):
 		if not find:
 			return None
 		for arg in args:
-			if self.nocase:
-				arg = arg.lower()
-				if not arg in lowperf:
-					return None
-			else:
-				if not arg in perf:
-					return None
+			flag = self.nocase and re.I or 0
+			m = re.search(arg, perf, flag)
+			if not m:
+				return None
 		return perf
 
 	def search (self, data, args, mode):
@@ -226,7 +223,7 @@ class FasdData (object):
 				item[3] = item[1]
 		elif mode in (2, 'time', 't'):
 			for item in data:
-				atime = itime[2]
+				atime = item[2]
 				item[3] = atime - current
 		return 0
 
@@ -313,6 +310,9 @@ class FasdNg (object):
 		self.fd = FasdData(datafile, owner)
 		self.unix = self.fd.unix
 		self._init_environ()
+		self.common = None
+		self.data = None
+		self.method = 'frecent'
 
 	def _init_environ (self):
 		exclude = os.environ.get('_F_BLACKLIST', '')
@@ -334,8 +334,133 @@ class FasdNg (object):
 		self.track_file = True
 		if os.environ.get('_F_TRACK_FILE', '') in ('0', 'no', 'false'):
 			self.track_file = False
+		self.readonly = False
+		if os.environ.get('_F_READ_ONLY') in ('1', 'yes', 'true'):
+			self.readonly = True
+		self.backends = {}
+		sep = self.unix and ':' or ';'
+		for n in os.environ.get('_F_BACKENDS', '').split(sep):
+			self.backends[n.strip('\r\n\t ')] = 1
+		self.sources = {}
+		self.final_data = []
 		return 0
+
+	def load (self):
+		if self.data is None:
+			data = self.fd.load()
+			self.data = self.fd.filter(data)
+		return self.data
+
+	def save (self):
+		if self.readonly:
+			return False
+		self.fd.save(self.data)
+		return True
+
+	def add (self, path):
+		if self.readonly:
+			return False
+		path = os.path.normpath(path)
+		if not os.path.exists(path):
+			return False
+		if os.path.isdir(path):
+			if not self.track_pwd:
+				return False
+		else:
+			if not self.track_file:
+				return False
+		self.load()
+		self.data = self.fd.add(self.data, path)
+		self.save()
+		return True
+
+	# st: f, d, a
+	def search (self, args, st):
+		data = self.load()
+		for backend in self.backends:
+			source = []
+			if backend in ('vim', 'viminfo'):
+				source = self.backend_viminfo()
+			# source = self.fd.filter(source)
+			data = self.fd.converge(data, source)
+		self.common = None
+		m = self.fd.search(data, args, self.matcher)
+		if st == 'f':
+			m = filter(lambda n: os.path.isfile(n[0]), m)
+		elif st == 'd':
+			m = filter(lambda n: os.path.isdir(n[0]), m)
+			self.common = self.fd.common(data, args)
+		if self.method in (0, '0', 'f', 'frecent'):
+			m = self.fd.score(m, 'r')
+		elif self.method in (1, '1', 'r', 'rank', 'ranked'):
+			m = self.fd.score(m, 'r')
+		else:
+			m = self.fd.score(m, 't')
+		return m
 		
+	def backend_viminfo (self):
+		data = []
+		viminfo = os.environ.get('_F_VIMINFO', '')
+		if not viminfo:
+			if self.unix:
+				viminfo = os.path.expanduser('~/.viminfo')
+			else:
+				viminfo = os.path.expanduser('~/_viminfo')
+		if not os.path.exists(viminfo):
+			return data
+		current = int(time.time())
+		with open(viminfo, 'rb') as fp:
+			content = fp.read()
+			pos = 0
+			encoding = 'utf-8'
+			while True:
+				next_pos = content.find(b'\n', pos)
+				if next_pos < 0:
+					break
+				line = content[pos:next_pos]
+				pos = next_pos + 1
+				line = line.strip(b'\r\n\t ')
+				if line.startswith(b'*encoding='):
+					enc = line[len(b'*encoding='):].strip(b'\r\n\t ')
+					encoding = enc.decode('utf-8', 'ignore')
+			state = 0
+			filename = ''
+			text = content.decode(encoding, 'ignore')
+			for line in text.split('\n'):
+				line = line.rstrip('\r\n\t')
+				if state == 0:
+					if line.startswith('>'):
+						filename = line[1:].lstrip(' \t')
+						state = 1
+				else:
+					state = 0
+					if not line[:1].isspace():
+						data.append([filename, 2, current, 0])
+						continue
+					line = line.lstrip(' \t')
+					if line[:1] != '*':
+						data.append([filename, 2, current, 0])
+						continue
+					for part in line.split():
+						if part.isdigit():
+							ts = int(part)
+							data.append([filename, 2, ts, 0])
+							break
+		new_data = []
+		ignore_prefix = ['git:', 'ssh:', 'gista:']
+		for item in data:
+			name = item[0]
+			skip = False
+			for ignore in ignore_prefix:
+				if name.startswith(ignore):
+					skip = True
+					break
+			if not skip:
+				if '~' in name:
+					item[0] = os.path.expanduser(name)
+				new_data.append(item)
+		# return data
+		return self.fd.filter(new_data)
 
 
 #----------------------------------------------------------------------
@@ -355,19 +480,27 @@ if __name__ == '__main__':
 		print(len(data))
 		print()
 		# fd.save(data)
-		args = ['github', 'im$']
+		args = ['github', 'im']
 		# args = ['D:\\']
+		# args = []
 		print(fd.string_match_fasd('d:\\acm\\github\\vim', args, 0))
 		m = []
 		# args = ['qemu']
-		m = fd.search(data, args, 0)
+		m = fd.search(data, args, 1)
 		fd.score(m, 'f')
 		# m = fd.match(data, ['vim$'])
 		fd.pretty(m)
 		print(fd.common(m, args))
 		return 0
 
-	test1()
+	def test2():
+		fn = FasdNg()
+		data = fn.backend_viminfo()
+		fn.fd.score(data, 'f')
+		fn.fd.pretty(data)
+		return 0
+
+	test2()
 
 
 
