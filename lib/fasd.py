@@ -341,8 +341,9 @@ class FasdNg (object):
 		sep = self.unix and ':' or ';'
 		for n in os.environ.get('_F_BACKENDS', '').split(sep):
 			self.backends[n.strip('\r\n\t ')] = 1
-		self.sources = {}
-		self.final_data = []
+		t = os.environ.get('_F_MAX_SCORE', '')
+		if t.isdigit():
+			self.fd.maxage = int(t)
 		return 0
 
 	def load (self):
@@ -403,6 +404,8 @@ class FasdNg (object):
 			self.fd.score(m, 't')
 		return m
 
+	# execute shell command and parse the output into a 
+	# list of: [path, rank, atime, scroe]
 	def backend_command (self, command):
 		import subprocess
 		p = subprocess.Popen(command, shell = True,
