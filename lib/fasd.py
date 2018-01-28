@@ -120,26 +120,86 @@ class FasdData (object):
 			print(strfmt%(m, n))
 		return 0
 
-	def match (self, data, args, nocase = False):
-		def match_string (string, patterns):
-			for pat in patterns:
-				m = pat.search(string)
-				if not m:
+	def string_match_fasd (self, string, args, nocase):
+		pos = 0
+		if nocase:
+			string = string.lower()
+		for arg in args:
+			pos = string.find(arg, pos)
+			if pos < 0:
+				return False
+			pos += len(arg)
+		if args:
+			lastarg = args[-1]
+			if self.unix:
+				if lastarg.endswith('/'):
+					return True
+			else:
+				if lastarg.endswith('\\'):
+					return True
+			lastpath = os.path.split(string)[-1]
+			if lastpath:
+				if not lastarg in lastpath:
 					return False
-				string = string[m.end():]
-			return True
-		flags = nocase and re.I or 0
-		patterns = [ re.compile(n, flags) for n in args ]
-		m = filter(lambda n: match_string(n[0], patterns), data)
+		return True
+
+	def string_match_z (self, string, patterns):
+		for pat in patterns:
+			m = pat.search(string)
+			if not m:
+				return False
+			string = string[m.end():]
+		return True
+
+	def match (self, data, args, nocase, mode):
+		if mode in (0, 'f', 'fasd'):
+			if nocase:
+				args = [ n.lower() for n in args ]
+			f = lambda n: self.string_match_fasd(n[0], args, nocase)
+			m = filter(f, data)
+		elif mode in (1, 'z', 2, 'zc'):
+			flags = nocase and re.I or 0
+			patterns = [ re.compile(n, flags) for n in args ]
+			f = lambda n: self.string_match_z(n[0], patterns)
+			m = filter(f, data)
+		else:
+			return []
 		return m
 
-	def search (self, data, args):
+	def common (self, data, args):
+		perf = os.path.commonprefix([ n[0] for n in data ])
+		if not perf or perf == '/':
+			return None
+		lowperf = perf.lower()
+		find = False
+		for item in data:
+			path = item[0]
+			test = perf
+			if self.nocase:
+				path = path.lower()
+				test = lowerperf
+			if test == path:
+				find = True
+				break
+		if not find:
+			return None
+		for arg in args:
+			if self.nocase:
+				arg = arg.lower()
+				if not arg in lowperf:
+					return None
+			else:
+				if not arg in perf:
+					return None
+		return perf
+
+	def search (self, data, args, mode):
 		if self.nocase:
-			m = self.match(data, args, True)
+			m = self.match(data, args, True, mode)
 		else:
-			m = self.match(data, args, False)
+			m = self.match(data, args, False, mode)
 			if not m:
-				m = self.match(data, args, True)
+				m = self.match(data, args, True, mode)
 		return m
 
 	def score (self, data, mode):
@@ -264,10 +324,13 @@ if __name__ == '__main__':
 		print(len(data))
 		print()
 		# fd.save(data)
-		m = fd.search(data, ['Vim'])
+		args = ['github', 'vim']
+		# args = ['qemu']
+		m = fd.search(data, args, 1)
 		fd.score(m, 'f')
 		# m = fd.match(data, ['vim$'])
 		fd.pretty(m)
+		print(fd.common(m, args))
 		return 0
 
 	test1()
