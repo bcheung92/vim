@@ -124,7 +124,9 @@ class FasdData (object):
 		pos = 0
 		if nocase:
 			string = string.lower()
-		for arg in args[:-1]:
+		for arg in args:
+			if arg.endswith('$'):
+				args = args[:-1]
 			pos = string.find(arg, pos)
 			if pos < 0:
 				return False
@@ -140,9 +142,9 @@ class FasdData (object):
 			if lastarg[-1:] == '$':
 				return string.endswith(lastarg[:-1])
 			lastpath = os.path.split(string)[-1]
-			if lastpath:
-				if not lastarg in lastpath:
-					return False
+			lastpath = lastpath and lastpath or string
+			if not lastarg in lastpath:
+				return False
 		return True
 
 	def string_match_z (self, string, patterns):
@@ -309,7 +311,31 @@ class FasdNg (object):
 		datafile = os.environ.get('_F_DATA', os.path.expanduser('~/.fasdng'))
 		owner = os.environ.get('_F_OWNER', None)
 		self.fd = FasdData(datafile, owner)
-		exclude = os.environ.get('_F_EXCLUDE_DIRS', '')
+		self.unix = self.fd.unix
+		self._init_environ()
+
+	def _init_environ (self):
+		exclude = os.environ.get('_F_BLACKLIST', '')
+		for black in exclude.split(self.unix and ':' or ';'):
+			black = black.strip('\r\n\t ')
+			if not black:
+				continue
+			self.fd.exclude.append(black)
+		if sys.platform in ('cygwin', 'msys') or sys.platform[:3] == 'win':
+			self.fd.nocase = True
+		else:
+			self.fd.nocase = False
+		self.matcher = 0
+		if os.environ.get('_F_MATCHER', 0) in ('z', '1'):
+			self.matcher = 1
+		self.track_pwd = True
+		if os.environ.get('_F_TRACK_PWD', '') in ('0', 'no', 'false'):
+			self.track_pwd = False
+		self.track_file = True
+		if os.environ.get('_F_TRACK_FILE', '') in ('0', 'no', 'false'):
+			self.track_file = False
+		return 0
+		
 
 
 #----------------------------------------------------------------------
@@ -330,7 +356,8 @@ if __name__ == '__main__':
 		print()
 		# fd.save(data)
 		args = ['github', 'vi']
-		# print(fd.string_match_fasd('d:/acm/github/vim', args, 1))
+		args = ['D:\\']
+		print(fd.string_match_fasd('d:\\', args, 0))
 		m = []
 		# args = ['qemu']
 		m = fd.search(data, args, 0)
