@@ -379,25 +379,28 @@ class FasdNg (object):
 		data = self.load()
 		for backend in self.backends:
 			source = []
-			if backend == 'viminfo':
-				source = self.backend_viminfo()
-			elif backend.startswith('+'):
-				source = self.backend_command(backend[1:])
-			# source = self.fd.filter(source)
-			data = self.fd.converge(data, source)
+			try:
+				if backend == 'viminfo':
+					source = self.backend_viminfo()
+				elif backend.startswith('+'):
+					source = self.backend_command(backend[1:])
+			except:
+				continue
+			source = self.fd.filter(source)
+			data = self.fd.converge([data, source])
 		self.common = None
 		m = self.fd.search(data, args, self.matcher)
 		if st == 'f':
 			m = filter(lambda n: os.path.isfile(n[0]), m)
 		elif st == 'd':
 			m = filter(lambda n: os.path.isdir(n[0]), m)
-			self.common = self.fd.common(data, args)
+			self.common = self.fd.common(m, args)
 		if self.method in (0, '0', 'f', 'frecent'):
-			m = self.fd.score(m, 'r')
+			self.fd.score(m, 'r')
 		elif self.method in (1, '1', 'r', 'rank', 'ranked'):
-			m = self.fd.score(m, 'r')
+			self.fd.score(m, 'r')
 		else:
-			m = self.fd.score(m, 't')
+			self.fd.score(m, 't')
 		return m
 
 	def backend_command (self, command):
@@ -523,8 +526,12 @@ if __name__ == '__main__':
 
 	def test2():
 		fn = FasdNg()
-		data = fn.backend_viminfo()
-		fn.fd.score(data, 'f')
+		# data = fn.backend_viminfo()
+		fn.backends = ['+type d:\\navdb.txt']
+		# fn.fd.score(data, 'f')
+		# fn.fd.pretty(fn.load())
+		data = fn.search([''], 'd')
+		# print(data)
 		fn.fd.pretty(data)
 		return 0
 
