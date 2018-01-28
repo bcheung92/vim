@@ -124,7 +124,7 @@ class FasdData (object):
 		pos = 0
 		if nocase:
 			string = string.lower()
-		for arg in args:
+		for arg in args[:-1]:
 			pos = string.find(arg, pos)
 			if pos < 0:
 				return False
@@ -137,6 +137,8 @@ class FasdData (object):
 			else:
 				if lastarg.endswith('\\'):
 					return True
+			if lastarg[-1:] == '$':
+				return string.endswith(lastarg[:-1])
 			lastpath = os.path.split(string)[-1]
 			if lastpath:
 				if not lastarg in lastpath:
@@ -304,7 +306,10 @@ class FasdData (object):
 class FasdNg (object):
 
 	def __init__ (self):
-		self.fd = FasdData()
+		datafile = os.environ.get('_F_DATA', os.path.expanduser('~/.fasdng'))
+		owner = os.environ.get('_F_OWNER', None)
+		self.fd = FasdData(datafile, owner)
+		exclude = os.environ.get('_F_EXCLUDE_DIRS', '')
 
 
 #----------------------------------------------------------------------
@@ -324,9 +329,11 @@ if __name__ == '__main__':
 		print(len(data))
 		print()
 		# fd.save(data)
-		args = ['github', 'vim']
+		args = ['github', 'vi']
+		# print(fd.string_match_fasd('d:/acm/github/vim', args, 1))
+		m = []
 		# args = ['qemu']
-		m = fd.search(data, args, 1)
+		m = fd.search(data, args, 0)
 		fd.score(m, 'f')
 		# m = fd.match(data, ['vim$'])
 		fd.pretty(m)
