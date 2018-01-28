@@ -38,6 +38,7 @@ class FasdData (object):
 	# load z/fasd compatible file to a list of [path, rank, atime, 0]
 	def load (self):
 		data = []
+		keys = {}
 		try:
 			with codecs.open(self.name, 'r', encoding = 'utf-8') as fp:
 				for line in fp:
@@ -49,9 +50,11 @@ class FasdData (object):
 					atime = part[2].rstrip('\n')
 					atime = atime.isdigit() and int(atime) or 0
 					score = 0
-					data.append([path, rank, atime, score])
+					keys[path] = [path, rank, atime, score]
 		except IOError:
 			return []
+		for key in keys:
+			data.append(keys[key])
 		return data
 
 	# save data into text file in the line format of "path|rank|atime" 
@@ -65,7 +68,7 @@ class FasdData (object):
 				ts = hex(ts)[2:]
 			ts += hex(random.randrange(65536))[2:]
 			return filename + '.' + ts.lower()
-		tmpname = self.make_tempname()
+		tmpname = make_tempname(self.name)
 		retval = 0
 		try:
 			with codecs.open(tmpname, 'w', encoding = 'utf-8') as fp:
@@ -227,8 +230,9 @@ class FasdData (object):
 				item[3] = atime - current
 		return 0
 
-	def insert (self, data, path):
-		key = self.nocase and path.lower() or path
+	def insert (self, data, paths):
+		if not isinstance(paths, list):
+			paths = [paths]
 		current = int(time.time())
 		count = sum([ n[1] for n in data ])
 		if count >= self.maxage:
@@ -238,19 +242,39 @@ class FasdData (object):
 				if key > 0:
 					newdata.append(item)
 			data = newdata
-		find = False
+		keys = {}
 		for item in data:
-			name = item[0]
-			if self.nocase:
-				name = name.lower()
-			if name == key:
+			key = self.nocase and item[0].lower() or item[0]
+			keys[key] = item
+		for path in paths:
+			key = self.nocase and path.lower() or path
+			if not key:
+				continue
+			if key in keys:
+				item = keys[key]
 				item[1] += 1
 				item[2] = current
-				find = True
-				break
-		if not find:
-			item = [path, 1, current, 0]
-			data.append(item)
+			else:
+				keys[key] = [path, 1, current, 0]
+		data = [ keys[n] for n in keys ]
+		return data
+
+	def remove (self, data, paths):
+		if not isinstance(paths, list):
+			paths = [paths]
+		if not paths:
+			return data
+		keys = {}
+		for item in data:
+			key = self.nocase and item[0].lower() or item[0]
+			keys[key] = item
+		for path in paths:
+			key = self.nocase and path.lower() or path
+			if not key:
+				continue
+			if key in keys:
+				del keys[key]
+		data = [ keys[n] for n in keys ]
 		return data
 
 	def normalize (self, path):
@@ -272,11 +296,25 @@ class FasdData (object):
 				return None
 		return path
 
-	def add (self, data, path):
-		path = self.normalize(path)
-		if not path:
-			return data
-		return self.insert(data, path)
+	def add (self, data, paths):
+		if not isinstance(paths, list):
+			paths = [paths]
+		new_paths = []
+		for path in paths:
+			path = self.normalize(path)
+			if path:
+				new_paths.append(path)
+		return self.insert(data, new_paths)
+
+	def delete (self, data, paths):
+		if not isinstance(paths, list):
+			paths = [paths]
+		new_paths = []
+		for path in paths:
+			path = os.path.normpath(path)
+			if path:
+				new_paths.append(path)
+		return self.remove(data, new_paths)
 
 	def converge (self, data_list):
 		path_dict = {}
@@ -305,9 +343,9 @@ class FasdData (object):
 class FasdNg (object):
 
 	def __init__ (self):
-		datafile = os.environ.get('_F_DATA', os.path.expanduser('~/.fasdng'))
+		datafile = os.environ.get('_F_DATA', os.path.expanduser('~/.fasd'))
 		owner = os.environ.get('_F_OWNER', None)
-		self.fd = FasdData(datafile, owner)
+		self.fd = FasdData(os.path.normpath(datafile), owner)
 		self.unix = self.fd.unix
 		self._init_environ()
 		self.common = None
@@ -358,20 +396,30 @@ class FasdNg (object):
 		self.fd.save(self.data)
 		return True
 
-	def add (self, path):
-		if self.readonly:
-			return False
-		path = os.path.normpath(path)
-		if not os.path.exists(path):
-			return False
-		if os.path.isdir(path):
-			if not self.track_pwd:
-				return False
-		else:
-			if not self.track_file:
-				return False
+	def add (self, paths):
+		if not isinstance(paths, list):
+			paths = [paths]
+		available = []
+		for path in paths:
+			path = os.path.normpath(path)
+			if not os.path.exists(path):
+				continue
+			if os.path.isdir(path):
+				if not self.track_pwd:
+					continue
+			else:
+				if not self.track_file:
+					continue
+			if path:
+				available.append(path)
 		self.load()
-		self.data = self.fd.add(self.data, path)
+		self.data = self.fd.add(self.data, available)
+		self.save()
+		return True
+
+	def delete (self, paths):
+		self.load()
+		self.data = self.fd.delete(self.data, paths)
 		self.save()
 		return True
 
@@ -397,7 +445,7 @@ class FasdNg (object):
 			m = filter(lambda n: os.path.isdir(n[0]), m)
 			self.common = self.fd.common(m, args)
 		if self.method in (0, '0', 'f', 'frecent'):
-			self.fd.score(m, 'r')
+			self.fd.score(m, 'f')
 		elif self.method in (1, '1', 'r', 'rank', 'ranked'):
 			self.fd.score(m, 'r')
 		else:
@@ -498,6 +546,17 @@ class FasdNg (object):
 
 
 #----------------------------------------------------------------------
+# main
+#----------------------------------------------------------------------
+def main(args = None):
+	args = [ n for n in (args and args or sys.argv) ]
+	cmd = None
+	if len(args) <= 1:
+		cmd = ''
+	return 0
+
+
+#----------------------------------------------------------------------
 # testing
 #----------------------------------------------------------------------
 if __name__ == '__main__':
@@ -529,13 +588,19 @@ if __name__ == '__main__':
 
 	def test2():
 		fn = FasdNg()
+		fn.readonly = True
+		print(fn.fd.name)
 		# data = fn.backend_viminfo()
-		fn.backends = ['+type d:\\navdb.txt']
+		# fn.backends = ['+type d:\\navdb.txt', 'viminfo']
 		# fn.fd.score(data, 'f')
 		# fn.fd.pretty(fn.load())
+		fn.add(['d:/linwei', 'd:/music'])
+		fn.delete(['c:/users', 'd:/', 'e:/'])
 		data = fn.search([''], 'd')
 		# print(data)
 		fn.fd.pretty(data)
+		# fn.data = data
+		# fn.save()
 		return 0
 
 	test2()
