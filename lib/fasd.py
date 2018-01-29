@@ -461,6 +461,10 @@ class FasdNg (object):
 
 	# query one result
 	def query (self, args, mode):
+		if args:
+			lastarg = args[-1]
+			if os.path.isabs(lastarg) and os.path.exists(lastarg):
+				return lastarg
 		m = self.search(args, mode)
 		if not m:
 			return None
