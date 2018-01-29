@@ -99,7 +99,6 @@ if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
 	" Plugin 'ctrlpvim/ctrlp.vim'
 	Plugin 'Yggdroot/LeaderF'
 	Plugin 'KabbAmine/zeavim.vim'
-	" Plugin 'lifepillar/vim-solarized8'
 	Plugin 'godlygeek/tabular'
 	Plugin 'Raimondi/delimitMate'
 	"Plugin 'sheerun/vim-polyglot'
@@ -119,6 +118,7 @@ if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
 	let g:Lf_ShortcutF = '<c-p>'
 	noremap <c-n> :LeaderfMru<cr>
 	noremap <m-m> :LeaderfTag<cr>
+	let g:Lf_StlSeparator = { 'left': '♰', 'right': '♱', 'font': '' }
 endif
 
 
