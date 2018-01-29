@@ -11,6 +11,8 @@ alias mvim='/usr/local/opt/bin/vim --cmd "let g:vim_startup=\"mvim\""'
 export TERM=xterm-256color
 export EDITOR=vim
 
+# disable ^s and ^q
+stty -ixon 2> /dev/null
 
 # setup for go if it exists
 if [ -d "$HOME/.local/go" ]; then
