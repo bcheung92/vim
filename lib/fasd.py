@@ -683,6 +683,18 @@ def command_exe(fn, query):
 	os.system(fn.select_exec + ' ' + pipes.quote(n))
 	return 0
 
+#----------------------------------------------------------------------
+# command_query: query and output 
+#----------------------------------------------------------------------
+def command_query(fn, query):
+	if not fn.interactive:
+		n = fn.query(query, fn.query_mode)
+	else:
+		n = interactive_select(fn, query, True)
+	if n:
+		sys.stdout.write(n)
+	return 0
+
 
 #----------------------------------------------------------------------
 # command_init: generate init script for shell eval
@@ -751,6 +763,14 @@ def main(args = None):
 	elif first == '--init':
 		command_init(fn, args[2:])
 		return 0
+	# run completion
+	elif first == '--complete':
+		head = '--complete='
+		mode = ''
+		if first.startswith(head):
+			mode = first[len(head):].strip('\r\n\t ')
+		command_complete(fn, mode, args[2:])
+		return 0
 	# show help
 	elif first in ('-h', '--help'):
 		print(doc_help)
@@ -811,7 +831,7 @@ def main(args = None):
 	fn.interactive = ('i' in options)
 	
 	# change directories
-	if query_mode == 'z' or 'c' in options:
+	if fn.query_mode == 'z' or 'c' in options:
 		command_cd(fn, query)
 		return 0
 
@@ -820,6 +840,20 @@ def main(args = None):
 		command_exe(fn, query)
 		return 0
 
+	# query path
+	if not sys.stdout.isatty():
+		command_query(fn, query)
+		return 0
+	
+	# select paths
+	if 'i' in options or fn.select_entry > 0:
+		n = interactive_select(fn, query, False)
+		print(n)
+		return 0
+
+	# list querys
+	match = fn.search(query, fn.query_mode)
+	fn.fd.pretty(match, 'l' in options, fn.reverse)
 
 	return 0
 
@@ -888,7 +922,8 @@ if __name__ == '__main__':
 		args = ['--help']
 		main(sys.argv[:1] + args)
 
-	test3()
+	# test3()
+	sys.exit(main())
 
 
 
