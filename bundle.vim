@@ -58,15 +58,6 @@ Plugin 'VundleVim/Vundle.vim'
 "----------------------------------------------------------------------
 " Plugins
 "----------------------------------------------------------------------
-"Plugin 'SirVer/ultisnips'
-"Plugin 'honza/vim-snippets'
-"Plugin 'tpope/vim-fugitive'
-"Plugin 'fs111/pydoc.vim'
-"Plugin 'mattn/webapi-vim'
-"Plugin 'mattn/gist-vim'
-"Plugin 'lambdalisue/vim-gista'
-"Plugin 'mhinz/vim-startify'
-"Plugin 'easymotion/vim-easymotion'
 
 
 "----------------------------------------------------------------------
@@ -136,7 +127,7 @@ endif
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'inter') >= 0 || s:bundle_all
 	" Plugin 'vim-scripts/DrawIt'
-	Plugin 'mbbill/VimExplorer'
+	" Plugin 'mbbill/VimExplorer'
 	Plugin 'rust-lang/rust.vim'
 	" Plugin 'vim-scripts/CRefVim'
 	" Plugin 'vim-scripts/stlrefvim'
@@ -175,12 +166,6 @@ endif
 if index(g:bundle_group, 'opt') >= 0
 	Plugin 'thinca/vim-quickrun'
 	Plugin 'pprovost/vim-ps1'
-	" Plugin 'luzhlon/popup.vim'
-	if has('python')
-		"Plugin 'mgedmin/pythonhelper.vim'
-		"Plugin 'mgedmin/chelper.vim'
-	endif
-	"Plugin 'vim-scripts/svn-diff.vim'
 	"Plugin 'airblade/vim-gitguttr'
 	"let g:gitgutter_enabled = 1
 	"let g:gitgutter_sign_column_always = 1
@@ -221,10 +206,7 @@ endif
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'special') >= 0
 	Plugin 'kshenoy/vim-signature'
-	"Plugin 'scrooloose/syntastic'
-	"Plugin 'tpope/vim-dispatch'
 	Plugin 'mh21/errormarker.vim'
-	" Plugin 'tpope/vim-projectionist'
 	Plugin 'dracula/vim'
 	Plugin 'mhinz/vim-signify'
 
