@@ -46,7 +46,9 @@ class FasdData (object):
 					if len(part) != 3:
 						continue
 					path = part[0]
-					rank = part[1].isdigit() and int(part[1]) or 0
+					rank = 0
+					try: rank = int(float(part[1]))
+					except: pass
 					atime = part[2].rstrip('\n')
 					atime = atime.isdigit() and int(atime) or 0
 					score = 0
@@ -490,7 +492,9 @@ class FasdNg (object):
 			if len(part) != 3:
 				continue
 			path = part[0]
-			rank = part[1].isdigit() and int(part[1]) or 0
+			rank = 0
+			try: rank = int(float(part[1]))
+			except: pass
 			atime = part[2].rstrip('\n')
 			atime = atime.isdigit() and int(atime) or 0
 			score = 0
@@ -578,7 +582,7 @@ IGNORE_LIST = ['cd', 'z', 'zz']
 
 def command_proc(fn, fmt, args, pwd = True):
 	paths = []
-	print('fmt=' + fmt)
+	# print('fmt=' + fmt)
 	if fmt in ('bash', 'zsh', 'history'):
 		args = args[1:]
 	if not args:
@@ -657,11 +661,16 @@ def interactive_select(fn, query, use_stderr):
 #----------------------------------------------------------------------
 def command_cd(fn, query):
 	fn.query_mode = 'd'
+	if not query:
+		match = fn.search([], 'd')
+		sys.stdout = sys.stderr
+		fn.fd.pretty(match)
+		return 0
 	if not fn.interactive:
 		pwd = fn.query(query, 'd')
 	else:
 		pwd = interactive_select(fn, query, True)
-	if not select:
+	if not pwd:
 		return 0
 	sys.stdout.write(pwd)
 	return 0
@@ -922,7 +931,14 @@ if __name__ == '__main__':
 		args = ['--help']
 		main(sys.argv[:1] + args)
 
-	# test3()
+	def test5():
+		fn = FasdNg()
+		match = fn.search([], 'a')
+		for n in match:
+			print(n)
+		return 0
+
+	# test5()
 	sys.exit(main())
 
 
