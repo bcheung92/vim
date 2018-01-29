@@ -113,14 +113,17 @@ class FasdData (object):
 			print('%s|%d|%d -> %s'%(path, rank, atime, score))
 		return 0
 
-	def pretty (self, data):
+	def pretty (self, data, noscore = False, reverse = False):
 		output = [ (n[3], n[0]) for n in data ]
-		output.sort()
+		output.sort(reverse = reverse)
 		output = [ (str(n[0]), n[1]) for n in output ]
 		maxlen = max([12] + [ len(n[0]) for n in output ]) + 2
 		strfmt = '%%-%ds %%s'%maxlen
 		for m, n in output:
-			print(strfmt%(m, n))
+			if noscore:
+				print(n)
+			else:
+				print(strfmt%(m, n))
 		return 0
 
 	def string_match_fasd (self, string, args, nocase):
@@ -454,6 +457,18 @@ class FasdNg (object):
 			self.fd.score(m, 't')
 		return m
 
+	# query one result
+	def query (self, args, mode):
+		m = self.search(args, mode)
+		if not m:
+			return None
+		if self.matcher != 0:
+			if self.common and mode == 'd':
+				return self.common
+		t = [ (n[3], n[0]) for n in m ]
+		t.sort()
+		return t[-1][1]
+
 	# execute shell command and parse the output into a 
 	# list of: [path, rank, atime, scroe]
 	def backend_command (self, command):
@@ -557,13 +572,255 @@ def backend_viminfo():
 
 
 #----------------------------------------------------------------------
+# command_proc - add filenames and pwd
+#----------------------------------------------------------------------
+IGNORE_LIST = ['cd', 'z', 'zz']
+
+def command_proc(fn, fmt, args, pwd = True):
+	paths = []
+	print('fmt=' + fmt)
+	if fmt in ('bash', 'zsh', 'history'):
+		args = args[1:]
+	if not args:
+		return 0
+	cmd = args[0]
+	if cmd in IGNORE_LIST:
+		return 0
+	ignore_env = os.environ.get('_F_IGNORE', '')
+	if sys.platform[:3] == 'win':
+		ignores = ignore_env.split(';')
+	else:
+		ignores = ignore_env.split(':')
+	if cmd in ignores:
+		return 0
+	for arg in args[1:]:
+		if arg.startswith('-'):
+			continue
+		if os.path.exists(arg):
+			paths.append(os.path.abspath(arg))
+	if pwd:
+		dir = os.getcwd()
+		if not dir in paths:
+			paths.append(dir)
+	if paths:
+		fn.add(paths)
+	return 0
+
+
+#----------------------------------------------------------------------
+# interactive_select
+#----------------------------------------------------------------------
+def interactive_select(fn, query, use_stderr):
+	match = fn.search(query, fn.query_mode)
+	if not match:
+		return None
+	s = [ (n[3], n[0]) for n in match ]
+	fp = use_stderr and sys.stderr or sys.stdout
+	s.sort(reverse = fn.reverse)
+	s = [ [0, n[0], n[1]] for n in s ]
+	w1 = 8
+	w2 = 12
+	index = len(s)
+	for i in range(len(s)):
+		n = s[i]
+		n[0] = index
+		index -= 1
+		w1 = max(w1, len(str(n[0])))
+		w2 = max(w2, len(str(n[1])))
+	if fn.select_entry > 0:
+		for n in s:
+			if n[0] == fn.select_entry:
+				return n[2]
+		return None
+	fmt = '%%-%ds %%-%ds %%s\n'%(w1 + 2, w2 + 2)
+	for n in s:
+		fp.write(fmt%(n[0], n[1], n[2]))
+	fp.write('> ')
+	fp.flush()
+	try:
+		select = raw_input()
+		select = select.strip()
+		if not select.isdigit():
+			return None
+		select = int(select)
+	except:
+		return None
+	for n in s:
+		if n[0] == select:
+			return n[2]
+	return None
+
+
+
+#----------------------------------------------------------------------
+# command_cd: change directory (output directory to stdout)
+#----------------------------------------------------------------------
+def command_cd(fn, query):
+	fn.query_mode = 'd'
+	if not fn.interactive:
+		pwd = fn.query(query, 'd')
+	else:
+		pwd = interactive_select(fn, query, True)
+	if not select:
+		return 0
+	sys.stdout.write(pwd)
+	return 0
+
+
+#----------------------------------------------------------------------
+# command_exe: query and execute shell command
+#----------------------------------------------------------------------
+def command_exe(fn, query):
+	if not fn.select_exec:
+		return 0
+	if not fn.interactive:
+		n = fn.query(query, fn.query_mode)
+	else:
+		n = interactive_select(fn, query, False)
+	if not n:
+		return 0
+	import pipes
+	os.system(fn.select_exec + ' ' + pipes.quote(n))
+	return 0
+
+
+#----------------------------------------------------------------------
+# command_init: generate init script for shell eval
+#----------------------------------------------------------------------
+def command_init(fn, args):
+	return 0
+
+
+#----------------------------------------------------------------------
+# docs
+#----------------------------------------------------------------------
+doc_help = '''fasd [options] [query ...]
+[f|a|s|d|z] [options] [query ...]
+  options:
+    -s         list paths with scores
+    -l         list paths without scores
+    -i         interactive mode
+    -e <cmd>   set command to execute on the result file
+    -b <name>  only use <name> backend
+    -B <name>  add additional backend <name>
+    -a         match files and directories
+    -d         match directories only
+    -f         match files only
+    -r         match by rank only
+    -t         match by recent access only
+    -R         reverse listing order
+    -h         show a brief help message
+    -[0-9]     select the nth entry
+
+fasd [-A|-D] [paths ...]
+    -A    add paths
+    -D    delete paths
+'''
+
+#----------------------------------------------------------------------
 # main
 #----------------------------------------------------------------------
 def main(args = None):
 	args = [ n for n in (args and args or sys.argv) ]
-	cmd = None
-	if len(args) <= 1:
-		cmd = ''
+
+	first = len(args) >= 2 and args[1] or ''
+
+	fn = FasdNg()
+
+	# add paths
+	if first in ('-A', '--add'):
+		paths = [ os.path.abspath(n) for n in args[2:] ]
+		if paths:
+			fn.add(paths)
+		return 0
+	# delete paths
+	elif first in ('-D', '--delete'):
+		paths = [ os.path.abspath(n) for n in args[2:] ]
+		if paths:
+			fn.delete(paths)
+		return 0
+	# process paths
+	elif first.startswith('--proc'):
+		head = '--proc='
+		fmt = ''
+		if first.startswith(head):
+			fmt = first[len(head):].strip('\r\n\t ')
+		command_proc(fn, fmt, args[2:])
+		return 0
+	# return init script for shell eval
+	elif first == '--init':
+		command_init(fn, args[2:])
+		return 0
+	# show help
+	elif first in ('-h', '--help'):
+		print(doc_help)
+		return 0
+		
+	query = []
+	options = []
+	fn.select_entry = -1
+
+	pos = 1
+	while pos < len(args):
+		arg = args[pos]
+		if not arg.startswith('-'):
+			break
+		if arg == '-b':
+			if pos + 1 < len(args):
+				fd.backends = [arg[pos + 1]]
+			pos += 2
+		elif arg == '-B':
+			if pos + 1 < len(args):
+				fd.backends.append(args[pos + 1])
+			pos += 2
+		elif arg == '-e':
+			if pos + 1 < len(args):
+				fn.select_exec = args[pos + 1]
+			pos += 2
+		elif arg[1:].isdigit():
+			fn.select_entry = int(arg[1:])
+			pos += 1
+		else:
+			for n in arg[1:]:
+				options.append(n)
+			pos += 1
+	
+	query = args[pos:]
+
+	# detect query mode: files/any/directories
+	if 'f' in options:
+		fn.query_mode = 'f'
+	elif 'a' in options:
+		fn.query_mode = 'a'
+	elif 'd' in options:
+		fn.query_mode = 'd'
+	elif 'z' in options:
+		fn.query_mode = 'z'
+	else:
+		fn.query_mode = 'a'
+
+	# check score method
+	if 'r' in options:
+		fn.method = 'rank'
+	elif 't' in options:
+		fn.method = 'time'
+	else:
+		fn.method = 'frecent'
+
+	fn.reverse = ('R' in options)
+	fn.interactive = ('i' in options)
+	
+	# change directories
+	if query_mode == 'z' or 'c' in options:
+		command_cd(fn, query)
+		return 0
+
+	# execute command
+	if 'e' in options:
+		command_exe(fn, query)
+		return 0
+
+
 	return 0
 
 
@@ -616,7 +873,22 @@ if __name__ == '__main__':
 		# fn.save()
 		return 0
 
-	test2()
+	def test3():
+		fn = FasdNg()
+		fn.select_entry = -1
+		fn.query_mode = 'a'
+		fn.reverse = False
+		s = interactive_select(fn, [''], False)
+		print(s)
+		return 0
+
+	def test4():
+		args = []
+		args = ['--proc=bash', '10', 'ls', '-la']
+		args = ['--help']
+		main(sys.argv[:1] + args)
+
+	test3()
 
 
 
