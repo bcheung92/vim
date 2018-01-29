@@ -46,16 +46,15 @@ zstyle ':prezto:module:terminal' auto-title 'yes'
 zstyle ':prezto:module:python' autovenv 'yes'
 zstyle ':prezto:load' pmodule \
 	'environment' \
-	'helper' \
 	'editor' \
-	'history' \
 	'git' \
 	'utility' \
-	'python' \
 	'completion' \
 	'autosuggestions' \
 	'syntax-highlighting' \
 	'prompt' \
+
+
 
 
 # Initialize prezto
@@ -108,9 +107,6 @@ ZSH_HIGHLIGHT_STYLES[assign]=none
 [ -f "$HOME/.local/etc/config.zsh" ] && source "$HOME/.local/etc/config.zsh" 
 [ -f "$HOME/.local/etc/local.zsh" ] && source "$HOME/.local/etc/local.zsh"
 
-# enable syntax highlighting
-# antigen bundle syntax-highlighting
-
 antigen apply
 
 # setup for deer
@@ -141,5 +137,10 @@ bindkey '\ev' deer
 
 alias lk='k --no-vcs'
 
+
+# Setup dir stack
+DIRSTACKSIZE=9
+setopt autopushd pushdminus pushdsilent pushdtohome
+alias d='dirs -v | head -10'
 
 
