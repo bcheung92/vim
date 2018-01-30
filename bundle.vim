@@ -108,7 +108,7 @@ if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
 	Plugin 'mhinz/vim-startify'
 	Plugin 'easymotion/vim-easymotion'
 	" Plugin 'ctrlpvim/ctrlp.vim'
-	Plugin 'KabbAmine/zeavim.vim'
+	" Plugin 'KabbAmine/zeavim.vim'
 	Plugin 'godlygeek/tabular'
 	Plugin 'Raimondi/delimitMate'
 	"Plugin 'sheerun/vim-polyglot'
