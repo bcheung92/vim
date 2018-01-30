@@ -74,8 +74,7 @@ if [ -n "$BASH_VERSION" ]; then
 
 elif [ -n "$ZSH_VERSION" ]; then
 
-	alias lk='k --no-vcs'
-	bindkey -s '\e;' 'lk\n'
+	bindkey -s '\e;' 'll\n'
 	bindkey -s '\eu' 'ranger_cd\n'
 
 fi
