@@ -38,7 +38,7 @@ source "$ANTIGEN"
 
 # Setup dir stack
 DIRSTACKSIZE=9
-setopt autopushd pushdminus pushdsilent pushdtohome
+setopt autopushd pushdminus pushdsilent pushdtohome pushdignoredups cdablevars
 alias d='dirs -v | head -10'
 
 # Disable correction
