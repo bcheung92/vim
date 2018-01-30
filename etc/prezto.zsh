@@ -143,4 +143,9 @@ DIRSTACKSIZE=9
 setopt autopushd pushdminus pushdsilent pushdtohome
 alias d='dirs -v | head -10'
 
+# Disable correction
+unsetopt correct_all
+unsetopt correct
+DISABLE_CORRECTION="true" 
+
 
