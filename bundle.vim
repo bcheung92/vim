@@ -86,6 +86,17 @@ if index(g:bundle_group, 'dirvish') >= 0
 	Plugin 'justinmk/vim-dirvish'
 endif
 
+if index(g:bundle_group, 'leaderf') >= 0
+	if has('python') || has('python3')
+		Plugin 'Yggdroot/LeaderF'
+		let g:Lf_ShortcutF = '<c-p>'
+		noremap <c-n> :LeaderfMru<cr>
+		noremap <m-m> :LeaderfTag<cr>
+		" let g:Lf_StlSeparator = { 'left': '♰', 'right': '♱', 'font': '' }
+		let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
+	endif
+endif
+
 
 "----------------------------------------------------------------------
 " Group - basic
@@ -103,14 +114,6 @@ if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
 	"Plugin 'sheerun/vim-polyglot'
 
 	"let g:gitgutter_enabled = 0
-
-	if has('python') || has('python3')
-		Plugin 'Yggdroot/LeaderF'
-		let g:Lf_ShortcutF = '<c-p>'
-		noremap <c-n> :LeaderfMru<cr>
-		noremap <m-m> :LeaderfTag<cr>
-		let g:Lf_StlSeparator = { 'left': '♰', 'right': '♱', 'font': '' }
-	endif
 
 	let g:zv_file_types = {
 				\ "^c$" : 'cpp,c',

@@ -18,7 +18,7 @@ let g:escope_gtags_label = 'pygments'
 
 
 if exists('g:vim_startup')
-	let g:bundle_group = ['simple']
+	let g:bundle_group = ['simple', 'dirvish', 'leaderf']
 
 	if g:vim_startup == 'nvim'
 		let g:bundle_group += ['basic']
@@ -36,7 +36,8 @@ else
 endif
 
 
-highlight LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
+hi LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
+hi SignColumn cterm=0
 
 if has('patch-7.4.2100')
 	call Tools_SwitchLayout()
@@ -45,5 +46,6 @@ endif
 if v:version >= 704
 	call EnableEnhancedDiff()
 endif
+
 
 
