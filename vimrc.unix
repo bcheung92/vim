@@ -37,7 +37,7 @@ endif
 
 
 hi LineNr term=bold cterm=NONE ctermfg=DarkGrey ctermbg=NONE gui=NONE guifg=DarkGrey guibg=NONE
-hi SignColumn cterm=0
+hi SignColumn ctermbg=0
 
 if has('patch-7.4.2100')
 	call Tools_SwitchLayout()
