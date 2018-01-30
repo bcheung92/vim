@@ -8,6 +8,7 @@ filetype plugin indent on
 set hlsearch
 set incsearch
 set wildmenu
+set ignorecase
 set cpo-=<
 noremap <tab>/ :emenu <C-Z>
 " noremap <c-n>  :emenu <C-Z>

@@ -119,7 +119,7 @@ bindkey '\eh' backward-char
 bindkey '\el' forward-char
 bindkey '\ej' down-line-or-history
 bindkey '\ek' up-line-or-history
-bindkey '\eu' undo
+# bindkey '\eu' undo
 bindkey '\eH' backward-word
 bindkey '\eL' forward-word
 bindkey '\eJ' beginning-of-line

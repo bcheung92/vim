@@ -119,7 +119,6 @@ bindkey '\eh' backward-char
 bindkey '\el' forward-char
 bindkey '\ej' down-line-or-history
 bindkey '\ek' up-line-or-history
-bindkey '\eu' undo
 bindkey '\eH' backward-word
 bindkey '\eL' forward-word
 bindkey '\eJ' beginning-of-line
@@ -134,6 +133,7 @@ bindkey '\e[1;3A' beginning-of-line
 bindkey '\e[1;3B' end-of-line
 
 bindkey '\ev' deer
+bindkey -s '\eu' 'ranger_cd\n'
 
 alias lk='k --no-vcs'
 

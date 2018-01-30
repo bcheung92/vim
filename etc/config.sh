@@ -12,7 +12,7 @@ export TERM=xterm-256color
 export EDITOR=vim
 
 # disable ^s and ^q
-stty -ixon 2> /dev/null
+# stty -ixon 2> /dev/null
 
 # setup for go if it exists
 if [ -d "$HOME/.local/go" ]; then
@@ -70,11 +70,13 @@ if [ -n "$BASH_VERSION" ]; then
 
 	bind '"\e;":"ll\n"'
 	bind '"\eo":"cd ..\n"'
+	bind '"\eu":"ranger_cd\n"'
 
 elif [ -n "$ZSH_VERSION" ]; then
 
 	alias lk='k --no-vcs'
 	bindkey -s '\e;' 'lk\n'
+	bindkey -s '\eu' 'ranger_cd\n'
 
 fi
 
@@ -116,6 +118,17 @@ fi
 #----------------------------------------------------------------------
 gdbtool () { emacs --eval "(gdb \"gdb --annotate=3 -i=mi $*\")";}
 
+ranger_cd () {
+    tempfile="$(mktemp -t tmp.XXXXXXXX)"
+    /usr/bin/ranger --choosedir="$tempfile" "${@:-$(pwd)}"
+	if [ -f "$tempfile" ]; then
+		local new_dir=$(cat -- "$tempfile")
+		rm -r -- "$tempfile"
+		if [ "$new_dir" != "$PWD" ]; then
+			cd -- "$new_dir"
+		fi
+	fi
+}
 
 
 
