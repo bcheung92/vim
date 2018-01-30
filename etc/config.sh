@@ -120,7 +120,7 @@ gdbtool () { emacs --eval "(gdb \"gdb --annotate=3 -i=mi $*\")";}
 
 ranger_cd () {
     tempfile="$(mktemp -t tmp.XXXXXXXX)"
-    /usr/bin/ranger --choosedir="$tempfile" "${@:-$(pwd)}"
+    ranger --choosedir="$tempfile" "${@:-$PWD}"
 	if [ -f "$tempfile" ]; then
 		local new_dir=$(cat -- "$tempfile")
 		rm -r -- "$tempfile"
