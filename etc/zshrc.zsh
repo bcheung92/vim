@@ -57,7 +57,7 @@ antigen bundle rupa/z z.sh
 
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-completions
-antigen bundle supercrabtree/k
+# antigen bundle supercrabtree/k
 antigen bundle Vifon/deer
 
 # uncomment the line below to enable theme
@@ -126,7 +126,7 @@ bindkey '\eJ' beginning-of-line
 bindkey '\eK' end-of-line
 
 bindkey -s '\eo' 'cd ..\n'
-bindkey -s '\e;' 'lk\n'
+bindkey -s '\e;' 'll\n'
 
 bindkey '\e[1;3D' backward-word
 bindkey '\e[1;3C' forward-word
@@ -135,6 +135,6 @@ bindkey '\e[1;3B' end-of-line
 
 bindkey '\ev' deer
 
-alias lk='k --no-vcs'
+alias ll='ls -l'
 
 

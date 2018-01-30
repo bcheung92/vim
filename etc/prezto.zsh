@@ -36,6 +36,17 @@ source "$ANTIGEN"
 # Load local bash/zsh compatible settings
 [ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
 
+# Setup dir stack
+DIRSTACKSIZE=9
+setopt autopushd pushdminus pushdsilent pushdtohome
+alias d='dirs -v | head -10'
+
+# Disable correction
+unsetopt correct_all
+unsetopt correct
+DISABLE_CORRECTION="true" 
+
+
 # Declare modules
 zstyle ':prezto:*:*' color 'yes'
 zstyle ':prezto:module:editor' key-bindings 'emacs'
@@ -55,15 +66,13 @@ zstyle ':prezto:load' pmodule \
 	'prompt' \
 
 
-
-
 # Initialize prezto
 antigen use prezto
 
 
 # default bundles
 antigen bundle rupa/z z.sh
-antigen bundle supercrabtree/k
+# antigen bundle supercrabtree/k
 antigen bundle Vifon/deer
 
 
@@ -125,7 +134,7 @@ bindkey '\eJ' beginning-of-line
 bindkey '\eK' end-of-line
 
 bindkey -s '\eo' 'cd ..\n'
-bindkey -s '\e;' 'lk\n'
+bindkey -s '\e;' 'll\n'
 
 bindkey '\e[1;3D' backward-word
 bindkey '\e[1;3C' forward-word
@@ -135,17 +144,7 @@ bindkey '\e[1;3B' end-of-line
 bindkey '\ev' deer
 bindkey -s '\eu' 'ranger_cd\n'
 
-alias lk='k --no-vcs'
+alias ll='ls -l'
 
-
-# Setup dir stack
-DIRSTACKSIZE=9
-setopt autopushd pushdminus pushdsilent pushdtohome
-alias d='dirs -v | head -10'
-
-# Disable correction
-unsetopt correct_all
-unsetopt correct
-DISABLE_CORRECTION="true" 
 
 
