@@ -35,8 +35,17 @@ if [ -z $INIT_SH_LOADED ]; then
 	fi
 
 	export PATH
-fi
 
+	# exit if not bash or zsh
+	[ -z "$BASH_VERSION" ] && [ -z "$ZSH_VERSION" ] && return
+
+	# run script for interactive shell for bash/zsh
+	if [[ $- == *i* ]]; then
+		if [ -f "$HOME/.local/etc/function.sh" ]; then
+			. "$HOME/.local/etc/function.sh"
+		fi
+	fi
+fi
 
 
 

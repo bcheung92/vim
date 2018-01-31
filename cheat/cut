@@ -1,6 +1,4 @@
-# cut
-
-  Cut out fields from STDIN or files.
+# cut - Cut out fields from STDIN or files.
 
 - Cut out the first sixteen characters of each line of STDIN:
 

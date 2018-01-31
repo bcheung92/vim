@@ -160,7 +160,7 @@ let g:ctrlp_custom_ignore = {
   \ 'link': 'some_bad_symbolic_links',
   \ }
 
-let g:ctrlp_root_markers = ['.project', '.root']
+let g:ctrlp_root_markers = ['.project', '.root', '.svn', '.git']
 let g:ctrlp_working_path = 0
 
 

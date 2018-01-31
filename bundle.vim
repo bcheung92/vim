@@ -64,37 +64,11 @@ Plugin 'VundleVim/Vundle.vim'
 " Group - simple
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'simple') >= 0 || s:bundle_all
-	" Plugin 'Shougo/vimfiler.vim'
-	" Plugin 'Shougo/unite.vim'
-	Plugin 'vim-scripts/Colour-Sampler-Pack'
-	" Plugin 'vim-jp/vim-cpp'
-	" let g:vimfiler_as_default_explorer = 1
-	" let g:vimfiler_no_default_key_mappings = 1
-endif
-
-if index(g:bundle_group, 'nerdtree') >= 0
-	Plugin 'scrooloose/nerdtree'
-	Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
-	let g:NERDTreeMinimalUI = 1
-	let g:NERDTreeDirArrows = 1
-	" let g:NERDTreeFileExtensionHighlightFullName = 1
-	" let g:NERDTreeExactMatchHighlightFullName = 1
-	" let g:NERDTreePatternMatchHighlightFullName = 1
-endif
-
-if index(g:bundle_group, 'dirvish') >= 0
+	Plugin 'pprovost/vim-ps1'
+	Plugin 'easymotion/vim-easymotion'
+	Plugin 'Raimondi/delimitMate'
+	Plugin 'godlygeek/tabular'
 	Plugin 'justinmk/vim-dirvish'
-endif
-
-if index(g:bundle_group, 'leaderf') >= 0
-	if has('python') || has('python3')
-		Plugin 'Yggdroot/LeaderF'
-		let g:Lf_ShortcutF = '<c-p>'
-		noremap <c-n> :LeaderfMru<cr>
-		noremap <m-m> :LeaderfTag<cr>
-		" let g:Lf_StlSeparator = { 'left': '♰', 'right': '♱', 'font': '' }
-		let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
-	endif
 endif
 
 
@@ -102,18 +76,24 @@ endif
 " Group - basic
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
-	Plugin 'honza/vim-snippets'
 	Plugin 'tpope/vim-fugitive'
 	Plugin 'lambdalisue/vim-gista'
 	Plugin 'mhinz/vim-startify'
-	Plugin 'easymotion/vim-easymotion'
-	" Plugin 'ctrlpvim/ctrlp.vim'
-	" Plugin 'KabbAmine/zeavim.vim'
-	Plugin 'godlygeek/tabular'
-	Plugin 'Raimondi/delimitMate'
-	"Plugin 'sheerun/vim-polyglot'
+	Plugin 'vim-scripts/Colour-Sampler-Pack'
 
-	"let g:gitgutter_enabled = 0
+	if has('python') || has('python3')
+		Plugin 'Yggdroot/LeaderF'
+		let g:Lf_ShortcutF = '<c-p>'
+		noremap <c-n> :LeaderfMru<cr>
+		noremap <m-m> :LeaderfTag<cr>
+		" let g:Lf_StlSeparator = { 'left': '♰', 'right': '♱', 'font': '' }
+		let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
+	else
+		Plugin 'ctrlpvim/ctrlp.vim'
+		let g:ctrlp_map = ''
+		noremap <c-n> :CtrlPMRUFiles<cr>
+		noremap <c-p> :CtrlP<cr>
+	endif
 
 	let g:zv_file_types = {
 				\ "^c$" : 'cpp,c',
@@ -132,17 +112,16 @@ endif
 " Group - inter
 "----------------------------------------------------------------------
 if index(g:bundle_group, 'inter') >= 0 || s:bundle_all
-	" Plugin 'vim-scripts/DrawIt'
-	" Plugin 'mbbill/VimExplorer'
 	Plugin 'rust-lang/rust.vim'
-	" Plugin 'vim-scripts/CRefVim'
-	" Plugin 'vim-scripts/stlrefvim'
 	Plugin 'skywind3000/vimoutliner'
 	Plugin 'vim-scripts/FuzzyFinder'
 	Plugin 'vim-scripts/L9'
+	Plugin 'wsdjeg/FlyGrep.vim'
+	" Plugin 'vim-scripts/DrawIt'
 				
 	if has('python')
 		Plugin 'skywind3000/vimpress'
+		" Plugin 'honza/vim-snippets'
 		" Plugin 'SirVer/ultisnips'
 	endif
 
@@ -165,52 +144,10 @@ if index(g:bundle_group, 'inter') >= 0 || s:bundle_all
 endif
 
 
-
-"----------------------------------------------------------------------
-" 
-"----------------------------------------------------------------------
-if index(g:bundle_group, 'opt') >= 0
-	Plugin 'thinca/vim-quickrun'
-	Plugin 'pprovost/vim-ps1'
-	"Plugin 'airblade/vim-gitguttr'
-	"let g:gitgutter_enabled = 1
-	"let g:gitgutter_sign_column_always = 1
-endif
-
-
-"----------------------------------------------------------------------
-" Group - jedi
-"----------------------------------------------------------------------
-if index(g:bundle_group, 'jedi') >= 0
-	Plugin 'davidhalter/jedi-vim'
-endif
-
-
-"----------------------------------------------------------------------
-" Group - neocomplete
-"----------------------------------------------------------------------
-if index(g:bundle_group, 'neocomplete') >= 0
-	if has('lua')
-		Plugin 'Shougo/neocomplete.vim'
-	endif
-	set completeopt=longest,menuone
-	"inoremap <expr> <TAB> pumvisible() ? "\<C-n>" : "\<tab>"
-	"au CursorMovedI,InsertLeave * if pumvisible() == 0|silent! pclose|endif
-	let g:neocomplete#enable_at_startup = 1 
-endif
-
-
-"----------------------------------------------------------------------
-" Group - ymc
-"----------------------------------------------------------------------
-if index(g:bundle_group, 'ymc') >= 0
-endif
-
-
 "----------------------------------------------------------------------
 " Group - special
 "----------------------------------------------------------------------
-if index(g:bundle_group, 'special') >= 0
+if index(g:bundle_group, 'high') >= 0
 	Plugin 'kshenoy/vim-signature'
 	Plugin 'mh21/errormarker.vim'
 	Plugin 'dracula/vim'
@@ -232,22 +169,20 @@ endif
 
 
 "----------------------------------------------------------------------
-" experiment
+" group opt 
 "----------------------------------------------------------------------
-if index(g:bundle_group, 'experiment') >= 0
+if index(g:bundle_group, 'opt') >= 0
+	Plugin 'thinca/vim-quickrun'
 	Plugin 'mattn/vim-terminal'
 	Plugin 'Shougo/vimshell.vim'
 	Plugin 'Shougo/vimproc.vim'
 	" Plugin 'w0rp/ale'
+	" Plugin 'airblade/vim-gitguttr'
+	" let g:gitgutter_enabled = 1
+	" let g:gitgutter_sign_column_always = 1
 endif
 
 
-"----------------------------------------------------------------------
-" completor
-"----------------------------------------------------------------------
-if index(g:bundle_group, 'completor') >= 0
-	Plugin 'maralla/completor.vim'
-endif
 
 
 "----------------------------------------------------------------------
@@ -328,6 +263,31 @@ if index(g:bundle_group, 'airline') >= 0
 	let g:airline_exclude_preview = 1
 	let g:airline_powerline_fonts = 1
 	" let g:airline_theme='bubblegum'
+endif
+
+if index(g:bundle_group, 'completor') >= 0
+	Plugin 'maralla/completor.vim'
+endif
+
+if index(g:bundle_group, 'neocomplete') >= 0
+	if has('lua')
+		Plugin 'Shougo/neocomplete.vim'
+	endif
+	set completeopt=longest,menuone
+	"inoremap <expr> <TAB> pumvisible() ? "\<C-n>" : "\<tab>"
+	"au CursorMovedI,InsertLeave * if pumvisible() == 0|silent! pclose|endif
+	let g:neocomplete#enable_at_startup = 1 
+endif
+
+
+if index(g:bundle_group, 'nerdtree') >= 0
+	Plugin 'scrooloose/nerdtree'
+	Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
+	let g:NERDTreeMinimalUI = 1
+	let g:NERDTreeDirArrows = 1
+	" let g:NERDTreeFileExtensionHighlightFullName = 1
+	" let g:NERDTreeExactMatchHighlightFullName = 1
+	" let g:NERDTreePatternMatchHighlightFullName = 1
 endif
 
 

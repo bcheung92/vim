@@ -37,7 +37,7 @@ source "$ANTIGEN"
 [ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
 
 # Setup dir stack
-DIRSTACKSIZE=9
+DIRSTACKSIZE=10
 setopt autopushd pushdminus pushdsilent pushdtohome pushdignoredups cdablevars
 alias d='dirs -v | head -10'
 
