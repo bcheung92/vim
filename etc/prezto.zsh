@@ -27,15 +27,19 @@ if [ ! -f "$ANTIGEN" ]; then
 fi
 
 
+
+# Load local bash/zsh compatible settings
+_INIT_SH_NOFUN=1
+[ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
+
+# exit for non-interactive shell
+[[ $- != *i* ]] && return
+
 # Initialize command prompt
 export PS1="%n@%m:%~%# "
 
 # Initialize antigen
 source "$ANTIGEN"
-
-# Load local bash/zsh compatible settings
-_INIT_SH_NOFUN=1
-[ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
 
 # Setup dir stack
 DIRSTACKSIZE=10

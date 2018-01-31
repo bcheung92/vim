@@ -1,4 +1,3 @@
-echo "function.sh sourced"
 # returns for non-interactive shells
 [[ $- != *i* ]] && return
 
