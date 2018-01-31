@@ -34,6 +34,7 @@ export PS1="%n@%m:%~%# "
 source "$ANTIGEN"
 
 # Load local bash/zsh compatible settings
+_INIT_SH_NOFUN=1
 [ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
 
 # Setup dir stack
@@ -144,8 +145,11 @@ bindkey '\e[1;3B' end-of-line
 
 bindkey '\ev' deer
 bindkey -s '\eu' 'ranger_cd\n'
+bindkey -s '\eOS' 'vim '
 
 alias ll='ls -l'
 
+# source function.sh if it exists
+[ -f "$HOME/.local/etc/function.sh" ] && . "$HOME/.local/etc/function.sh"
 
 

@@ -1,8 +1,8 @@
 # init script for both login and non-login shell
 # vim: set ft=sh :
 
-if [ -z $INIT_SH_LOADED ]; then
-	INIT_SH_LOADED=1
+if [ -z $_INIT_SH_LOADED ]; then
+	_INIT_SH_LOADED=1
 
 	# set PATH so it includes user's private bin if it exists
 	if [ -d "$HOME/.local/bin" ]; then
@@ -36,13 +36,14 @@ if [ -z $INIT_SH_LOADED ]; then
 
 	export PATH
 
-	# exit if not bash or zsh
-	[ -z "$BASH_VERSION" ] && [ -z "$ZSH_VERSION" ] && return
+	# check if bash or zsh
+	if [ -n "$BASH_VERSION" ] || [ -z "$ZSH_VERSION" ]; then
 
-	# run script for interactive shell for bash/zsh
-	if [[ $- == *i* ]]; then
-		if [ -f "$HOME/.local/etc/function.sh" ]; then
-			. "$HOME/.local/etc/function.sh"
+		# run script for interactive shell of bash/zsh
+		if [[ $- == *i* ]] && [ -z "$_INIT_SH_NOFUN" ]; then
+			if [ -f "$HOME/.local/etc/function.sh" ]; then
+				. "$HOME/.local/etc/function.sh"
+			fi
 		fi
 	fi
 fi
