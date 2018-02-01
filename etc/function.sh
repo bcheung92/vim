@@ -89,7 +89,8 @@ fi
 #----------------------------------------------------------------------
 settitle () 
 { 
-  echo -ne "\e]2;$@\a\e]1;$@\a"; 
+	[[ "$EMACS" == *term* ]] && return
+	echo -ne "\e]2;$@\a\e]1;$@\a"; 
 }
 
 
@@ -120,10 +121,48 @@ if [ -n "$ZSH_VERSION" ]; then
 		fi
 
 		local reset_color="%F{7}"
-		PROMPT="${_prompt_skwp_colors[3]}%n%f@${_prompt_skwp_colors[2]}%m%f ${_prompt_skwp_colors[5]}%~%f %{$reset_color%}$ "
-		RPROMPT="%{$_prompt_skwp_colors[6]%}%(?..%?)%{$reset_color%}"
+		PROMPT="${_prompt_skwp_colors[3]}%n%f@${_prompt_skwp_colors[2]}%m%f ${_prompt_skwp_colors[5]}%~%f %f$ "
+		RPROMPT="%{$_prompt_skwp_colors[6]%}%(?..%?)%f"
 	}
 fi
+
+
+#----------------------------------------------------------------------
+# prompt - normal
+#----------------------------------------------------------------------
+function _prompt_init_theme {
+	if [ -n "$BASH_VERSION" ]; then
+		if [[ "$1" == "" ]]; then
+			export PS1='\u@\h:\w\$ '
+		elif [[ "$1" == "linux" ]]; then
+			export PS1='\[\e[32m\]\u@\h\[\e[0m:\[\e[33m\]\w\[\e[0m\]\$ '
+		elif [[ "$1" == "cygwin" ]]; then
+			export PS1='\n\[\e[32m\]\u@\h\[\e[0m \[\e[33m\]\w\[\e[0m\]\n\$ '
+		elif [[ "$1" == "skwp" ]]; then
+			export PS1='\[\e[35m\]\u\[\e[0m\]@\[\e[33m\]\h\[\e[0m:\[\e[32m\]\w\[\e[0m\] \$ '
+		elif [[ "$1" == "skwp256" ]]; then
+			export PS1='\[\e[38;5;135m\]\u\[\e[0m\]@\[\e[38;5;166m\]\h\[\e[0m \[\e[38;5;118m\]\w\[\e[0m\] \$ '
+		elif [[ "$1" == "skwp256-cygwin" ]]; then
+			export PS1='\n\[\e[38;5;135m\]\u\[\e[0m\]@\[\e[38;5;166m\]\h\[\e[0m \[\e[38;5;118m\]\w\[\e[0m\]\n\$ '
+		fi
+	else
+		local NEWLINE=$'\n'
+		if [[ "$1" == "" ]]; then
+			export PROMPT="%f%n@%m:%~%# "
+		elif [[ "$1" == "linux" ]]; then
+			export PROMPT="%F{2}%n@%m%f:%F{3}%~%f%# "
+		elif [[ "$1" == "cygwin" ]]; then
+			export PROMPT="${NEWLINE}%F{2}%n@%m%f %F{3}%~${NEWLINE}%f%# "
+		elif [[ "$1" == "skwp" ]]; then
+			export PROMPT="%F{5}%n%f@%F{3}%m%f %F{2}%~%f \$ "
+		elif [[ "$1" == "skwp256" ]]; then
+			export PROMPT="%F{135}%n%f@%F{166}%m%f %F{118}%~%f \$ "
+		elif [[ "$1" == "skwp256-cygwin" ]]; then
+			export PROMPT="${NEWLINE}%F{135}%n%f@%F{166}%m%f %F{118}%~%f${NEWLINE}\$ "
+		fi
+		RPROMPT="%{$_prompt_skwp_colors[6]%}%(?..%?)%f"
+	fi
+}
 
 
 #----------------------------------------------------------------------
@@ -140,6 +179,13 @@ elif [ -n "$ZSH_VERSION" ]; then
 	bindkey -s '\eu' 'ranger_cd\n'
 	bindkey '\e[15~' fzf-cd-widget
 fi
+
+
+#----------------------------------------------------------------------
+# default theme
+#----------------------------------------------------------------------
+_prompt_init_theme 
+settitle "$(whoami)@$(hostname)"
 
 
 
