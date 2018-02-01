@@ -180,6 +180,9 @@ let g:Lf_WildIgnore = {
 let g:Lf_MruFileExclude = ['*.so', '*.exe', '*.py[co]', '*.sw?', '~$*', '*.bak']
 let g:Lf_MruMaxFiles = 2048
 let g:Lf_StlColorscheme = 'powerline'
+let g:Lf_ShortcutF = '<c-p>'
+let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
+let g:Lf_CommandMap = {'<C-C>': ['<Esc>', '<C-C>'], '<Esc>':['<C-q>']}
 
 
 
