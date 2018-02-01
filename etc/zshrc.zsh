@@ -41,12 +41,16 @@ _INIT_SH_NOFUN=1
 # exit for non-interactive shell
 [[ $- != *i* ]] && return
 
+# WSL (aka Bash for Windows) doesn't work well with BG_NICE
+[ -d "/mnt/c" ] && [[ "$(uname -a)" == *Microsoft* ]] && unsetopt BG_NICE
+
+
 # Initialize antigen
 source "$ANTIGEN"
 
+
 # Initialize oh-my-zsh
 antigen use oh-my-zsh
-
 
 # default bundles
 # visit https://github.com/unixorn/awesome-zsh-plugins
@@ -59,13 +63,8 @@ antigen bundle svn-fast-info
 antigen bundle colorize
 antigen bundle github
 antigen bundle python
-
-# Bash for windows doesn't works very well with latest z.sh
-if [ -d "/mnt/c" ] && [[ "$(uname -a)" != *Microsoft* ]]; then
-	antigen bundle rupa/z z.sh
-else
-	antigen bundle z
-fi
+antigen bundle rupa/z z.sh
+# antigen bundle z
 
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-completions

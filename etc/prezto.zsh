@@ -35,6 +35,9 @@ _INIT_SH_NOFUN=1
 # exit for non-interactive shell
 [[ $- != *i* ]] && return
 
+# WSL (aka Bash for Windows) doesn't work well with BG_NICE
+[ -d "/mnt/c" ] && [[ "$(uname -a)" == *Microsoft* ]] && unsetopt BG_NICE
+
 # Initialize command prompt
 export PS1="%n@%m:%~%# "
 
