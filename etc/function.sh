@@ -93,6 +93,38 @@ settitle ()
 }
 
 
+#----------------------------------------------------------------------
+# zsh skwp theme
+#----------------------------------------------------------------------
+if [ -n "$ZSH_VERSION" ]; then
+	function _prompt_skwp_init {
+		# Use extended color pallete if available.
+		if [[ $TERM = *256color* || $TERM = *rxvt* ]]; then
+			_prompt_skwp_colors=(
+			"%F{81}"  # Turquoise
+			"%F{166}" # Orange
+			"%F{135}" # Purple
+			"%F{161}" # Hotpink
+			"%F{118}" # Limegreen
+			"%F{1}"   # Darkred
+			)
+		else
+			_prompt_skwp_colors=(
+			"%F{cyan}"
+			"%F{yellow}"
+			"%F{magenta}"
+			"%F{red}"
+			"%F{green}"
+			"%F{1}"   # Darkred
+			)
+		fi
+
+		local reset_color="%F{7}"
+		PROMPT="${_prompt_skwp_colors[3]}%n%f@${_prompt_skwp_colors[2]}%m%f ${_prompt_skwp_colors[5]}%~%f %{$reset_color%}$ "
+		RPROMPT="%{$_prompt_skwp_colors[6]%}%(?..%?)%{$reset_color%}"
+	}
+fi
+
 
 #----------------------------------------------------------------------
 # advance keymap
