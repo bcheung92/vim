@@ -88,6 +88,19 @@ if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
 		noremap <m-m> :LeaderfTag<cr>
 		" let g:Lf_StlSeparator = { 'left': '♰', 'right': '♱', 'font': '' }
 		let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
+		let g:Lf_NormalMap = {
+			\ "File":   [["<ESC>", ':exec g:Lf_py "fileExplManager.quit()"<CR>']],
+			\ "Buffer": [["<ESC>", ':exec g:Lf_py "bufExplManager.quit()"<CR>']],
+			\ "Mru":    [["<ESC>", ':exec g:Lf_py "mruExplManager.quit()"<CR>']],
+			\ "Tag":    [],
+			\ "BufTag": [],
+			\ "Function": [],
+			\ "Line":   [],
+			\ "History":[],
+			\ "Help":   [],
+			\ "Self":   [],
+			\ "Colorscheme": []
+			\}
 	else
 		Plugin 'ctrlpvim/ctrlp.vim'
 		let g:ctrlp_map = ''

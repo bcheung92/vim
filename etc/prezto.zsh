@@ -51,6 +51,9 @@ unsetopt correct_all
 unsetopt correct
 DISABLE_CORRECTION="true" 
 
+# Enable 256 color to make auto-suggestions look nice
+export TERM="xterm-256color"
+
 
 # Declare modules
 zstyle ':prezto:*:*' color 'yes'
@@ -78,7 +81,6 @@ antigen use prezto
 
 # default bundles
 antigen bundle rupa/z z.sh
-# antigen bundle supercrabtree/k
 antigen bundle Vifon/deer
 
 
