@@ -62,6 +62,7 @@ zstyle ':prezto:module:git:alias' skip 'yes'
 zstyle ':prezto:module:prompt' theme 'redhat'
 zstyle ':prezto:module:prompt' pwd-length 'short'
 zstyle ':prezto:module:terminal' auto-title 'yes'
+zstyle ':prezto:module:autosuggestions' color 'yes'
 zstyle ':prezto:module:python' autovenv 'yes'
 zstyle ':prezto:load' pmodule \
 	'environment' \
@@ -69,9 +70,9 @@ zstyle ':prezto:load' pmodule \
 	'git' \
 	'utility' \
 	'completion' \
-	'autosuggestions' \
-	'syntax-highlighting' \
 	'history-substring-search' \
+	'syntax-highlighting' \
+	'autosuggestions' \
 	'prompt' \
 
 
@@ -82,7 +83,7 @@ antigen use prezto
 # default bundles
 antigen bundle rupa/z z.sh
 antigen bundle Vifon/deer
-
+# antigen bundle zsh-users/zsh-autosuggestions
 
 # check login shell
 if [[ -o login ]]; then

@@ -105,6 +105,7 @@ if [ -n "$BASH_VERSION" ]; then
 	bind '"\e[15~":"\$(__fzf_cd__)\n"'
 elif [ -n "$ZSH_VERSION" ]; then
 	bindkey -s '\eOS' 'vim '
+	bindkey -s '\eu' 'ranger_cd\n'
 	bindkey '\e[15~' fzf-cd-widget
 fi
 

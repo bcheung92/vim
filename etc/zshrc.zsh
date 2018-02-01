@@ -37,6 +37,7 @@ export TERM="xterm-256color"
 source "$ANTIGEN"
 
 # Load local bash/zsh compatible settings
+_INIT_SH_NOFUN=1
 [ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
 
 
@@ -46,7 +47,7 @@ antigen use oh-my-zsh
 
 # default bundles
 # visit https://github.com/unixorn/awesome-zsh-plugins
-antigen bundle git
+# antigen bundle git
 # antigen bundle heroku
 antigen bundle pip
 antigen bundle svn-fast-info
@@ -139,5 +140,9 @@ bindkey '\e[1;3B' end-of-line
 bindkey '\ev' deer
 
 alias ll='ls -l'
+
+
+# source function.sh if it exists
+[ -f "$HOME/.local/etc/function.sh" ] && . "$HOME/.local/etc/function.sh"
 
 
