@@ -138,6 +138,8 @@ function _prompt_init_theme {
 			export PS1='\[\e[32m\]\u@\h\[\e[0m:\[\e[33m\]\w\[\e[0m\]\$ '
 		elif [[ "$1" == "cygwin" ]]; then
 			export PS1='\n\[\e[32m\]\u@\h\[\e[0m \[\e[33m\]\w\[\e[0m\]\n\$ '
+		elif [[ "$1" == "msys" ]]; then
+			export PS1='\n\[\e[32m\]\u@\h\[\e[0m \[\e[35m\]${MSYSTEM} \[\e[33m\]\w\[\e[0m\]\n\$ '
 		elif [[ "$1" == "skwp" ]]; then
 			export PS1='\[\e[35m\]\u\[\e[0m\]@\[\e[33m\]\h\[\e[0m:\[\e[32m\]\w\[\e[0m\] \$ '
 		elif [[ "$1" == "skwp256" ]]; then
@@ -153,6 +155,8 @@ function _prompt_init_theme {
 			export PROMPT="%F{2}%n@%m%f:%F{3}%~%f%# "
 		elif [[ "$1" == "cygwin" ]]; then
 			export PROMPT="${NEWLINE}%F{2}%n@%m%f %F{3}%~${NEWLINE}%f%# "
+		elif [[ "$1" == "msys" ]]; then
+			export PROMPT="${NEWLINE}%F{2}%n@%m%f %F{5}${MSYSTEM} %F{3}%~${NEWLINE}%f%# "
 		elif [[ "$1" == "skwp" ]]; then
 			export PROMPT="%F{5}%n%f@%F{3}%m%f %F{2}%~%f \$ "
 		elif [[ "$1" == "skwp256" ]]; then
@@ -184,8 +188,8 @@ fi
 #----------------------------------------------------------------------
 # default theme
 #----------------------------------------------------------------------
-_prompt_init_theme 
-settitle "$(whoami)@$(hostname)"
+# _prompt_init_theme 
+# settitle "$(whoami)@$(hostname)"
 
 
 
