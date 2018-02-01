@@ -33,13 +33,16 @@ export PS1="%n@%m:%~%# "
 # Enable 256 color to make auto-suggestions look nice
 export TERM="xterm-256color"
 
-# Initialize antigen
-source "$ANTIGEN"
 
 # Load local bash/zsh compatible settings
 _INIT_SH_NOFUN=1
 [ -f "$HOME/.local/etc/init.sh" ] && source "$HOME/.local/etc/init.sh"
 
+# exit for non-interactive shell
+[[ $- != *i* ]] && return
+
+# Initialize antigen
+source "$ANTIGEN"
 
 # Initialize oh-my-zsh
 antigen use oh-my-zsh
@@ -56,8 +59,13 @@ antigen bundle svn-fast-info
 antigen bundle colorize
 antigen bundle github
 antigen bundle python
-antigen bundle rupa/z z.sh
-# antigen bundle z
+
+# Bash for windows doesn't works very well with latest z.sh
+if [ -d "/mnt/c" ] && [[ "$(uname -a)" != *Microsoft* ]]; then
+	antigen bundle rupa/z z.sh
+else
+	antigen bundle z
+fi
 
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-completions
