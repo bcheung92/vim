@@ -292,8 +292,8 @@ function q-ips
 	Darwin|*BSD)
 		local ip=$(ifconfig  | grep -E 'inet.[0-9]' | grep -v '127.0.0.1' | awk '{ print $2}')
 		;;
-	Linux)
-		local ip=$(ifconfig | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
+	*)
+		local ip=$(hostname --all-ip-addresses | tr " " "\n" | grep -v "0.0.0.0" | grep -v "127.0.0.1")
 		;;
 	esac
 
@@ -365,6 +365,16 @@ function q-whois () {
                     # this is the best whois server
                                                    # strip extra fluff
     /usr/bin/whois -h whois.internic.net $domain | sed '/NOTICE:/q'
+}
+
+
+function q-weather {
+	local city="${1:-guangzhou}"
+	if [ -x "$(which wget)" ]; then
+		wget -qO- "wttr.in/~${city}"
+	elif [ -x "$(which curl)" ]; then
+		curl "wttr.in/~${city}"
+	fi
 }
 
 
