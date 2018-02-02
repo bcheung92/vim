@@ -378,6 +378,35 @@ function q-weather {
 }
 
 
+function _colorize_via_pygmentize() {
+    if [ ! -x "$(which pygmentize)" ]; then
+        echo "package \'Pygments\' is not installed!"
+        return -1
+    fi
+
+    if [ $# -eq 0 ]; then
+        pygmentize -g $@
+    fi
+
+    for FNAME in $@
+    do
+        filename=$(basename "$FNAME")
+        lexer=`pygmentize -N \"$filename\"`
+        if [ "Z$lexer" != "Ztext" ]; then
+            pygmentize -l $lexer "$FNAME"
+        else
+            pygmentize -g "$FNAME"
+        fi
+    done
+}
+
+
+#----------------------------------------------------------------------
+# additional alias
+#----------------------------------------------------------------------
+[ ! -x "$(which ccat 2> /dev/null)" ] && alias ccat=_colorize_via_pygmentize
+
+
 #----------------------------------------------------------------------
 # advance keymap
 #----------------------------------------------------------------------
@@ -392,7 +421,6 @@ elif [ -n "$ZSH_VERSION" ]; then
 	bindkey -s '\eu' 'ranger_cd\n'
 	bindkey '\e[15~' fzf-cd-widget
 fi
-
 
 #----------------------------------------------------------------------
 # Logout
