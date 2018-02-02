@@ -278,9 +278,9 @@ function q-sysinfo
 # get public IP
 function q-myip
 {
-	if [ -x "$(which curl)" ]; then
+	if command -v curl &> /dev/null; then
 		curl ifconfig.co
-	elif [ -x "$(which wget)" ]; then
+	elif command -v wget &> /dev/null; then
 		wget -qO- ifconfig.co
 	fi
 }
@@ -404,7 +404,11 @@ function _colorize_via_pygmentize() {
 #----------------------------------------------------------------------
 # additional alias
 #----------------------------------------------------------------------
-[ ! -x "$(which ccat 2> /dev/null)" ] && alias ccat=_colorize_via_pygmentize
+if ! command -v ccat &> /dev/null; then
+	if command -v pygmentize &> /dev/null; then
+		alias ccat=_colorize_via_pygmentize
+	fi
+fi
 
 
 #----------------------------------------------------------------------
