@@ -278,10 +278,10 @@ function q-sysinfo
 # get public IP
 function q-myip
 {
-	if [ -x "$(which wget)" ]; then
-		wget -qO- ifconfig.co
-	elif [ -x "$(which curl)" ]; then
+	if [ -x "$(which curl)" ]; then
 		curl ifconfig.co
+	elif [ -x "$(which wget)" ]; then
+		wget -qO- ifconfig.co
 	fi
 }
 
