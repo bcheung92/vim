@@ -271,8 +271,8 @@ function q-sysinfo
 	echo -e "\n${RED}Current date :$NC " ; date
 	echo -e "\n${RED}Machine stats :$NC " ; uptime
 	echo -e "\n${RED}Memory stats :$NC " ; free
-	echo -e "\n${RED}Public IP Address :$NC" ; myip
-	echo -e "\n${RED}Local IP Address :$NC" ; ips
+	echo -e "\n${RED}Public IP Address :$NC" ; q-myip
+	echo -e "\n${RED}Local IP Address :$NC" ; q-ips
 }
 
 # get public IP
