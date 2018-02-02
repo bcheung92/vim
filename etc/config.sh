@@ -111,3 +111,10 @@ if [ -n "$BASH_VERSION" ]; then
 fi
 
 
+#----------------------------------------------------------------------
+# other interactive shell settings
+#----------------------------------------------------------------------
+export GCC_COLORS=1
+export EXECIGNORE="*.dll"
+
+
