@@ -384,8 +384,16 @@ function _colorize_via_pygmentize() {
         return -1
     fi
 
+	local style="${PYGMENTS_STYLE:-default}"
+
+	[[ $TERM != *256color* && $TERM != *rxvt* ]] && style=""
+
     if [ $# -eq 0 ]; then
-        pygmentize -g $@
+		if [ -n "$style" ]; then
+			pygmentize -P style=$style -f terminal256 -g $@
+		else
+			pygmentize -g $@
+		fi
     fi
 
     for FNAME in $@
@@ -393,9 +401,17 @@ function _colorize_via_pygmentize() {
         filename=$(basename "$FNAME")
         lexer=`pygmentize -N \"$filename\"`
         if [ "Z$lexer" != "Ztext" ]; then
-            pygmentize -l $lexer "$FNAME"
+			if [ -n "$style" ]; then
+				pygmentize -P style=$style -f terminal256 -l $lexer "$FNAME"
+			else
+				pygmentize -l $lexer "$FNAME"
+			fi
         else
-            pygmentize -g "$FNAME"
+			if [ -n "$style" ]; then
+				pygmentize -P style=$style -f terminal256 -g "$FNAME"
+			else
+				pygmentize -g "$FNAME"
+			fi
         fi
     done
 }
@@ -404,11 +420,7 @@ function _colorize_via_pygmentize() {
 #----------------------------------------------------------------------
 # additional alias
 #----------------------------------------------------------------------
-if ! command -v ccat &> /dev/null; then
-	if command -v pygmentize &> /dev/null; then
-		alias ccat=_colorize_via_pygmentize
-	fi
-fi
+alias ccat=_colorize_via_pygmentize
 
 
 #----------------------------------------------------------------------
