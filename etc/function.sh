@@ -128,6 +128,40 @@ fi
 
 
 #----------------------------------------------------------------------
+# fish collapsed pwd
+#----------------------------------------------------------------------
+function _fish_collapsed_pwd () {
+	local pwd="$1"
+	local home="$HOME"
+	local size=${#home}
+	[[ $# == 0 ]] && pwd="$PWD" 
+	[[ "$pwd" == "" ]] && return
+	if [[ "$pwd" == "/" ]]; then
+		echo "/"
+		return
+	elif [[ "$pwd" == "$home" ]]; then
+		echo "~"
+		return
+	fi
+	case $pwd in 
+		("$home") pwd="~" ;;
+		("$home/"*) pwd="~${pwd[$size+1, -1]}" ;;
+	esac
+	local elements=("${(s:/:)pwd}")
+	local length=${#elements}
+	# print -l $elements
+	for i in {1..$((length-1))}; do
+		local elem=${elements[$i]}
+		if [[ ${#elem} > 1 ]]; then
+			elements[$i]=${elem[1]}
+		fi
+	done
+	pwd="${(j./.)elements}"
+	echo "$pwd"
+}
+
+
+#----------------------------------------------------------------------
 # prompt - normal
 #----------------------------------------------------------------------
 function _prompt_init_theme {
@@ -171,6 +205,18 @@ function _prompt_init_theme {
 			export PROMPT="${NEWLINE}%F{135}%n%f@%F{166}%m%f %F{118}%~%f${NEWLINE}\$ "
 		elif [[ "$1" == "skwp256-msys" ]]; then
 			export PROMPT="${NEWLINE}%F{135}%n%f@%F{166}%m%f %F{5}${MSYSTEM} %F{118}%~%f${NEWLINE}\$ "
+		elif [[ "$1" == "fish" ]]; then
+			if [ $UID -eq 0 ]; then
+				export PROMPT='%f%n@%m %F{1}$(_fish_collapsed_pwd)%f> '
+			else
+				export PROMPT='%f%n@%m %F{2}$(_fish_collapsed_pwd)%f> '
+			fi
+		elif [[ "$1" == "fish-skwp" ]]; then
+			if [ $UID -eq 0 ]; then
+				export PROMPT='%F{135}%n%f@%F{166}%m%f %F{11}$(_fish_collapsed_pwd)%f> '
+			else
+				export PROMPT='%F{135}%n%f@%F{166}%m%f %F{118}$(_fish_collapsed_pwd)%f> '
+			fi
 		fi
 		RPROMPT="%{$_prompt_skwp_colors[6]%}%(?..%?)%f"
 	fi
@@ -448,6 +494,6 @@ function _exit() {
 }
 
 # run function on logout
-trap _exit EXIT
+# trap _exit EXIT
 
 
