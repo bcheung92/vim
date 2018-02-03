@@ -334,7 +334,7 @@ function q-myip
 # get all IPs
 function q-ips
 {
-	case $OS in
+	case $(uname) in
 	Darwin|*BSD)
 		local ip=$(ifconfig  | grep -E 'inet.[0-9]' | grep -v '127.0.0.1' | awk '{ print $2}')
 		;;
