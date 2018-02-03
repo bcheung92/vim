@@ -5,6 +5,8 @@ https://www.zhihu.com/question/20833248/answer/186085007
 
 主要功能都放到了 F12，F11 呼出的菜单里了。
 
+(本文档严重滞后于功能，懒得更新了)
+
 
 ## Install
 
