@@ -469,7 +469,7 @@ function _colorize_via_pygmentize() {
 # additional alias
 #----------------------------------------------------------------------
 alias ccat=_colorize_via_pygmentize
-PYGMENTS_STYLE="fruity"
+PYGMENTS_STYLE="monokai"
 
 
 #----------------------------------------------------------------------
