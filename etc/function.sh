@@ -432,7 +432,9 @@ function _colorize_via_pygmentize() {
 
 	local style="${PYGMENTS_STYLE:-default}"
 
-	[[ $TERM != *256color* && $TERM != *rxvt* ]] && style=""
+	if [[ $TERM != *256color* && $TERM != *rxvt* && $TERM != xterm* ]]; then
+		style=""
+	fi
 
     if [ $# -eq 0 ]; then
 		if [ -n "$style" ]; then
@@ -467,6 +469,7 @@ function _colorize_via_pygmentize() {
 # additional alias
 #----------------------------------------------------------------------
 alias ccat=_colorize_via_pygmentize
+PYGMENTS_STYLE="fruity"
 
 
 #----------------------------------------------------------------------
