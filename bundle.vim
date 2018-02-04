@@ -79,7 +79,8 @@ if index(g:bundle_group, 'basic') >= 0 || s:bundle_all
 	Plugin 'tpope/vim-fugitive'
 	Plugin 'lambdalisue/vim-gista'
 	Plugin 'mhinz/vim-startify'
-	Plugin 'vim-scripts/Colour-Sampler-Pack'
+	Plugin 'flazz/vim-colorschemes'
+	" Plugin 'vim-scripts/Colour-Sampler-Pack'
 
 	if has('python') || has('python3')
 		Plugin 'Yggdroot/LeaderF'
