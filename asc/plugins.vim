@@ -152,6 +152,18 @@ let Tlist_Show_Menu = 0
 
 
 "----------------------------------------------------------------------
+" FuzzyFinder
+"----------------------------------------------------------------------
+let g:fuf_modesDisable = ['mrucmd', ]
+let g:fuf_keyOpenSplit = '<C-x>'
+let g:fuf_keyOpenVsplit = '<C-v>'
+let g:fuf_keyOpenTabpage = '<C-t>'
+let g:fuf_dataDir = '~/.vim/fuf-data'
+let g:fuf_mrufile_maxItem = 500
+let g:fuf_mrufile_maxItemDir = 100
+
+
+"----------------------------------------------------------------------
 "- CtrlP
 "----------------------------------------------------------------------
 let g:ctrlp_custom_ignore = {
