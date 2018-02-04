@@ -9,6 +9,7 @@ set hlsearch
 set incsearch
 set wildmenu
 set ignorecase
+set path=.,,.;
 set cpo-=<
 noremap <tab>/ :emenu <C-Z>
 " noremap <c-n>  :emenu <C-Z>

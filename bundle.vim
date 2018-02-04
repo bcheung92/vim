@@ -134,6 +134,10 @@ if index(g:bundle_group, 'inter') >= 0 || s:bundle_all
 	noremap <space>bn :BlogNew post<cr>
 	noremap <space>bl :BlogList<cr>
 
+	noremap <silent><tab>- :FufMruFile<cr>
+	noremap <silent><tab>= :FufFile<cr>
+	noremap <silent><tab>[ :FufBuffer<cr>
+
 	map <silent> <leader>ck <Plug>CRV_CRefVimAsk
 	map <silent> <leader>cj <Plug>CRV_CRefVimInvoke
 
